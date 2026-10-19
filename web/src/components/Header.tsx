@@ -1,16 +1,12 @@
 import { kr, plural } from "../lib/format.ts";
 import { useBump } from "../lib/hooks.ts";
 
-export function Header({ total, donations }: { total: number; donations: number; }) {
+export function Header({ total, donations }: { total: number; donations: number }) {
     const bump = useBump(total);
 
     return (
         <header>
-            <div className="brand">
-                <div>
-                    <h1>Alumniskatt</h1>
-                </div>
-            </div>
+            <h1>Alumniskatt</h1>
             <div className="total">
                 <div className="label">Insamlat</div>
                 {/* Remounted on every bump to replay the colour flash */}

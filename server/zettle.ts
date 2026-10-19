@@ -4,10 +4,9 @@
 const TOKEN_URL = "https://oauth.zettle.com/token";
 const PURCHASES_URL = "https://purchase.izettle.com/purchases/v2";
 const PRODUCTS_URL = "https://products.izettle.com/organizations/self/products";
+const PAGE_SIZE = 1000;
 
 export type ZettleLibraryProduct = {
-    uuid: string;
-    name: string;
     variants: { uuid: string; name: string }[];
 };
 
@@ -20,7 +19,6 @@ export type ZettleProduct = {
     unitPrice: number;
     discountValue?: number;
     comment?: string;
-    type?: "PRODUCT" | "CUSTOM_AMOUNT" | "GIFTCARD";
     [key: string]: unknown;
 };
 
@@ -28,7 +26,6 @@ export type ZettlePurchase = {
     purchaseUUID1: string;
     timestamp: string;
     amount: number;
-    userDisplayName?: string;
     products: ZettleProduct[];
     [key: string]: unknown;
 };
@@ -80,7 +77,7 @@ export class ZettleClient {
         lastPurchaseHash?: string;
         limit?: number;
     }): Promise<PurchasesPage> {
-        const params = new URLSearchParams({ limit: String(opts.limit ?? 1000) });
+        const params = new URLSearchParams({ limit: String(opts.limit ?? PAGE_SIZE) });
         if (opts.startDate) params.set("startDate", opts.startDate);
         if (opts.endDate) params.set("endDate", opts.endDate);
         if (opts.lastPurchaseHash) params.set("lastPurchaseHash", opts.lastPurchaseHash);
@@ -99,9 +96,9 @@ export class ZettleClient {
         const all: ZettlePurchase[] = [];
         let lastPurchaseHash: string | undefined;
         while (true) {
-            const page = await this.purchases({ startDate, endDate, lastPurchaseHash, limit: 1000 });
+            const page = await this.purchases({ startDate, endDate, lastPurchaseHash });
             all.push(...page.purchases);
-            if (page.purchases.length < 1000 || !page.lastPurchaseHash) return all;
+            if (page.purchases.length < PAGE_SIZE || !page.lastPurchaseHash) return all;
             lastPurchaseHash = page.lastPurchaseHash;
         }
     }

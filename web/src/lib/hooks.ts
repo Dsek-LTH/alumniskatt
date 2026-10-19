@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
-import type { Leaderboard } from "../../../src/types.ts";
+import type { Leaderboard } from "../../../server/types.ts";
 
 /** Polls the leaderboard API. Returns null until the first response. */
 export function useLeaderboard(refreshMs: number): Leaderboard | null {

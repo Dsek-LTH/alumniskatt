@@ -1,21 +1,27 @@
+/* Neo-brutalism: black outlines, hard shadows and flat bright colours */
+
 :root {
     /* Guild colours: D-sek pink (the Pink Panther) and InfoCom purple */
-    --dsek: #f280a1;
-    --dsek-ink: #c43d69;
-    --dsek-soft: #fde7ee;
-    --infocom: #9966cc;
-    --infocom-ink: #6f3fa6;
-    --infocom-soft: #efe6f8;
+    --dsek: #ff6fae;
+    --dsek-ink: #d61f69;
+    --dsek-soft: #ff6fae40;
+    --infocom: #9b7bff;
+    --infocom-ink: #5a3fd1;
+    --infocom-soft: #9b7bff40;
+    --lime: #b8f35b;
 
-    --bg: #faf7f8;
+    --bg: #fff3d6;
     --card: #ffffff;
-    --line: #ece4e8;
-    --text: #1d1a1c;
-    --muted: #75696f;
-    --faint: #a99ca3;
+    --line: #111;
+    --text: #111;
+    --muted: #3d3d3d;
+    --faint: #6b6b6b;
+    --ok: #22c55e;
     --bad: #d64545;
 
-    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Loaded from Google Fonts in index.html */
+    --display: "Archivo Black", Impact, sans-serif;
+    --sans: "Space Grotesk", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -34,37 +40,9 @@ html, body {
     --fit: 1;
     --u: calc(min(1vh, 0.75vw) * var(--fit));
 
-    /* Typography and surfaces. These are the Classic theme; themes.css overrides them. */
-    --display: "Cinzel", "Copperplate", "Trajan Pro", Georgia, serif;
-    --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --eyebrow-font: var(--display);
-    --eyebrow-tracking: 0.18em;
-    --title-weight: 800;
-    --title-style: normal;
-    --title-case: none;
-    --title-tracking: 0.02em;
-    --title-color: var(--text);
-    --number-font: var(--sans);
-    --number-weight: 800;
-    --number-tracking: -0.03em;
-    --total-color: var(--dsek-ink);
-    --hero-font: var(--sans);
-    --hero-weight: 800;
-    --hero-tracking: -0.01em;
-    --board-top-width: calc(var(--u) * 0.6);
-    --rank-bg: #f3eef0;
-    --track: #f6f1f3;
-    --on-accent: #fff;
-    --hero-flash: #ffffffa6;
-    --step-bg: var(--text);
-    --step-fg: #fff;
-    --ok: #3fb26b;
-
     min-height: 100vh;
-    background: var(--bg-image, none), var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     gap: calc(var(--u) * 3);
     padding: calc(var(--u) * 3.5) max(16px, calc(var(--u) * 4.5));
@@ -74,71 +52,81 @@ html, body {
 
 .num { font-variant-numeric: tabular-nums; }
 
+/* The Archivo Black display font has a single weight */
+.leaderboard h1,
+.board h2,
+.total .label,
+.total .amount,
+.hero .name,
+.hero .money,
+.monogram {
+    font-family: var(--display);
+    font-weight: 400;
+}
+
+/* Stickers: flat colour, black outline and a hard shadow */
+.board h2,
+.total .amount,
+.hero .money {
+    border: 3px solid var(--line);
+    box-shadow: 4px 4px 0 var(--line);
+}
+
 /* ---------- header ---------- */
 
+/* Title and total share one row, lined up on the text baseline */
 .leaderboard header {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: calc(var(--u) * 1.5) calc(var(--u) * 3);
 }
 
-.brand { display: flex; align-items: center; gap: calc(var(--u) * 2.5); }
+.leaderboard h1 { font-size: calc(var(--u) * 6.4); line-height: 1; text-transform: uppercase; }
 
-
-/* The display font is for the page title; board titles use the text font */
-.leaderboard h1 {
-    font-weight: var(--title-weight);
-    text-transform: var(--title-case);
-    letter-spacing: var(--title-tracking);
-    color: var(--title-color);
-}
-.leaderboard h1 { font-size: calc(var(--u) * 6.4); line-height: 1; }
-
-.total { text-align: right; }
-.total .label,
-.eyebrow {
-    font-family: var(--eyebrow-font);
+/* "INSAMLAT  2 190 kr  90 inbetalningar" on one line, so the header is no taller than the title */
+.total { display: flex; align-items: baseline; gap: calc(var(--u) * 1.5); white-space: nowrap; }
+.total .label {
     font-size: calc(var(--u) * 1.6);
-    font-weight: 600;
-    letter-spacing: var(--eyebrow-tracking);
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
 }
 .total .amount {
-    font-family: var(--number-font);
+    display: inline-block;
+    padding: 0 0.25em;
     font-size: calc(var(--u) * 7);
-    font-weight: var(--number-weight);
     line-height: 1.05;
-    letter-spacing: var(--number-tracking);
-    color: var(--total-color);
+    background: var(--lime);
+    transform: rotate(1deg);
 }
 .total .amount.bumped { animation: total-bump 1.5s ease-out; }
 @keyframes total-bump {
     from { color: var(--infocom); }
-    to { color: var(--total-color); }
+    to { color: var(--text); }
 }
 .total .count { font-size: calc(var(--u) * 1.9); color: var(--muted); }
 
 /* ---------- boards ---------- */
 
+/* minmax(0, …) so long names shrink with the screen instead of widening the board */
 .leaderboard main {
     display: grid;
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     gap: calc(var(--u) * 3);
     min-height: 0;
 }
 
 .board {
+    /* Lets the hero card adapt to the board's width (see the @container rule) */
+    container-type: inline-size;
     --accent: var(--dsek);
     --accent-ink: var(--dsek-ink);
     --accent-soft: var(--dsek-soft);
     background: var(--card);
-    border: 1px solid var(--line);
-    border-top: var(--board-top-width) solid var(--board-top-color, var(--accent));
-    box-shadow: var(--card-shadow, none);
-    border-radius: calc(var(--u) * 1.4);
+    border: 3px solid var(--line);
+    border-radius: 14px;
+    box-shadow: 8px 8px 0 var(--line);
     padding: calc(var(--u) * 2.8) calc(var(--u) * 3);
     display: flex;
     flex-direction: column;
@@ -151,12 +139,14 @@ html, body {
     --accent-soft: var(--infocom-soft);
 }
 
+/* Board titles are tilted stickers */
 .board h2 {
-    font-family: var(--sans);
+    width: fit-content;
+    padding: 0.1em 0.5em;
     font-size: calc(var(--u) * 3.2);
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    color: var(--accent-ink);
+    text-transform: uppercase;
+    background: var(--accent);
+    transform: rotate(-1.5deg);
 }
 
 /* position: relative so rows leaving the list (popLayout) are placed within it */
@@ -199,14 +189,17 @@ html, body {
     place-items: center;
     width: 1.6em;
     height: 1.6em;
+    border: 2.5px solid var(--line);
     border-radius: 50%;
     font-size: 0.8em;
     font-weight: 700;
     color: var(--muted);
-    background: var(--rank-bg);
+    background: var(--card);
 }
-.podium .rank { background: var(--accent); color: var(--on-accent); }
-.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.podium .rank { background: var(--accent); color: var(--text); }
+/* Names wrap rather than being cut off; only committee names are hyphenated */
+.name { font-weight: 600; overflow-wrap: anywhere; }
+.committees-board .name { hyphens: auto; }
 .money { text-align: right; font-weight: 700; white-space: nowrap; }
 .sub { display: block; font-size: 0.62em; color: var(--muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -216,18 +209,17 @@ html, body {
 
 .committee {
     display: grid;
-    grid-template-columns: 1.3em 1.5em minmax(4em, 10.5em) 1fr 4.5em;
+    grid-template-columns: 1.3em 1.5em minmax(4em, 14em) minmax(4em, 1fr) 4.5em;
     align-items: center;
     gap: 0.7em;
     padding: 0.1em 0.2em;
 }
 
-.bar-track { height: 0.9em; background: var(--track); border-radius: 0.45em; overflow: hidden; }
+.bar-track { height: 1.05em; background: var(--card); border: 2.5px solid var(--line); border-radius: 99px; overflow: hidden; }
 .bar {
     height: 100%;
     min-width: 0.9em;
     background: var(--accent);
-    border-radius: 0.45em;
     transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -248,6 +240,44 @@ html, body {
 
 .empty { color: var(--muted); padding: 0.5em 0; }
 
+/* hero: the big card for #1 on each board */
+
+.hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.3em 0.9em;
+    /* Room below for the amount sticker hanging over the bottom edge */
+    margin-bottom: 0.9em;
+    padding: 0.8em 1em;
+    border: 3px solid var(--line);
+    border-radius: 12px;
+    background: var(--accent);
+    box-shadow: 5px 5px 0 var(--line);
+}
+
+.hero .flash { background: #ffffff80; }
+.hero .logo { width: 2.8em; height: 2.8em; padding: 0.3em; background: var(--card); border: 3px solid var(--line); border-radius: 50%; }
+.sub .mini { width: 1.15em; height: 1.15em; vertical-align: -0.25em; margin: 0 0.25em; object-fit: contain; }
+
+.hero .name { font-size: 1.8em; line-height: 1.15; }
+.hero .sub { font-size: 0.7em; color: var(--text); }
+.hero .delta { right: 1em; }
+
+/* The leader's amount is a sticker slapped over the card's bottom-right corner,
+   so the card itself needs no room for it */
+.hero .money {
+    position: absolute;
+    right: -0.3em;
+    bottom: -0.75em;
+    padding: 0 0.3em;
+    font-size: 1.8em;
+    background: var(--lime);
+    transform: rotate(-4deg);
+}
+
 /* donors */
 
 .monogram {
@@ -255,60 +285,32 @@ html, body {
     place-items: center;
     width: 2.6em;
     aspect-ratio: 1;
+    border: 3px solid var(--line);
     border-radius: 50%;
-    font-family: var(--display);
     font-size: 1.05em;
-    font-weight: var(--hero-weight);
     letter-spacing: 0.04em;
-    color: var(--accent-ink);
-    background: var(--card);
-    border: 1px solid var(--accent);
+    background: var(--lime);
 }
-
-.hero {
-    position: relative;
-    isolation: isolate;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.3em 0.9em;
-    padding: 0.8em 1em;
-    border-radius: var(--hero-radius, 0.6em);
-    background: var(--hero-bg, var(--accent-soft));
-    border: var(--hero-border, 0 solid transparent);
-    overflow: hidden;
-}
-
-.hero .flash { background: var(--hero-flash); }
-.hero .logo { width: 2.8em; height: 2.8em; }
-.sub .mini { width: 1.15em; height: 1.15em; vertical-align: -0.25em; margin: 0 0.25em; object-fit: contain; }
-
-.hero .name {
-    font-family: var(--hero-font);
-    font-size: 1.8em;
-    font-weight: var(--hero-weight);
-    letter-spacing: var(--hero-tracking);
-    line-height: 1.15;
-}
-.hero .money {
-    font-family: var(--number-font);
-    font-size: 1.8em;
-    font-weight: var(--number-weight);
-    color: var(--accent-ink);
-    margin-right: 0.4em;
-}
-.hero .sub { font-size: 0.7em; }
-.hero .delta { right: 6.5em; }
 
 .donor {
     display: grid;
     grid-template-columns: 1.3em minmax(0, 1fr) auto;
     align-items: center;
     gap: 0.7em;
-    padding: 0.15em 0.2em 0.35em;
-    border-bottom: 1px solid var(--line);
+    padding: 0.15em 0.2em;
 }
-.donor:last-child { border-bottom: none; }
+/* Dividers sit midway in the gap between rows. A pseudo-element rather than a
+   border, so the row's rounded corners (for the flash) don't bend the line. */
+.donors-board ol { gap: 0.6em; }
+.donor:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.3em;
+    border-top: 2px solid var(--line);
+    transform: translateY(50%);
+}
 
 /* ---------- footer ---------- */
 
@@ -330,9 +332,9 @@ html, body {
     width: 1.6em;
     height: 1.6em;
     margin-right: 0.5em;
+    border: 2.5px solid var(--line);
     border-radius: 50%;
-    background: var(--step-bg);
-    color: var(--step-fg);
+    background: var(--lime);
     font-size: 0.8em;
 }
 .steps strong { color: var(--text); }
@@ -351,17 +353,54 @@ html, body {
 /* ---------- views ---------- */
 
 /* Single-board views: one panel gets the whole width and a bit more size */
-.leaderboard[data-mode] main { grid-template-columns: 1fr; }
+.leaderboard[data-mode] main { grid-template-columns: minmax(0, 1fr); }
 .leaderboard[data-mode] { --u: calc(min(1.15vh, 1.4vw) * var(--fit)); }
 .leaderboard[data-mode="donors"] main { width: min(100%, calc(var(--u) * 120)); justify-self: center; }
 
 /* Too narrow for two boards side by side: stack them. The 7px floor keeps
-   text readable on phones, which scroll instead of shrinking further. */
+   text readable on small screens, which scroll instead of shrinking further. */
 @media (max-aspect-ratio: 6/5), (max-width: 800px) {
-    .leaderboard main { grid-template-columns: 1fr; }
+    .leaderboard main { grid-template-columns: minmax(0, 1fr); }
     .leaderboard,
     .leaderboard[data-mode] { --u: max(7px, calc(min(1vh, 2.2vw) * var(--fit))); }
+    /* Too narrow for the total on one line: stack it beside the title instead,
+       with both capped by the width so they always share the row */
+    .leaderboard header { align-items: center; }
+    .leaderboard h1 { font-size: min(calc(var(--u) * 6.4), 6vw); }
+    .total { display: block; text-align: right; }
+    .total .amount { font-size: min(calc(var(--u) * 7), 5.5vw); }
+}
+
+/* Phones scroll, so size by width alone (--fit is ignored) and give every name
+   room: amounts move below the names. */
+@media (max-width: 600px) {
+    .leaderboard,
+    .leaderboard[data-mode] { --u: max(8px, 2.2vw); }
+    .leaderboard { padding-inline: 16px; }
+    /* Too narrow for one row: the total goes under the title */
+    .leaderboard header { flex-wrap: wrap; }
     .total { text-align: left; }
+    .leaderboard h1 { font-size: calc(var(--u) * 5); }
+    .total .amount { font-size: calc(var(--u) * 7); }
+
+    .sub { font-size: 0.75em; white-space: normal; overflow-wrap: anywhere; hyphens: auto; }
+
+    /* Committee rows: rank, logo and name on top, bar and amount underneath */
+    .committee { grid-template-columns: 1.3em 1.5em minmax(0, 1fr) 4.5em; row-gap: 0.3em; }
+    .committee .name { grid-column: 3 / -1; }
+    .committee .bar-track { grid-column: 3; }
+    .hero .sub { font-size: 0.8em; }
+
+    .shame { font-size: 0.9em; }
+}
+
+/* Narrow boards (standing screens, phones): a smaller hero, so long names fit on one line */
+@container (max-width: 28em) {
+    .hero .logo,
+    .hero .monogram { width: 2.2em; height: 2.2em; }
+    .hero .name { font-size: 1.4em; }
+    .hero .money { font-size: 1.5em; }
+    .hero .sub { white-space: normal; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -6,7 +6,7 @@
 import { logoFor } from "./logos.ts";
 import { purchaserKey } from "./poller.ts";
 import { servePage, startServer } from "./server.ts";
-import { createStore } from "./store.ts";
+import { createStore, type Row } from "./store.ts";
 
 const COMMITTEES = [
     "Cafémästeriet", "Centralprocessorutskottet", "Skattmästeriet", "Framtidsutskottet",
@@ -33,14 +33,16 @@ const SCENARIOS = {
 type Scenario = keyof typeof SCENARIOS;
 
 const store = createStore();
-store.setCommittees(COMMITTEES);
+let rows: Row[] = [];
+// Like the poller, every change hands the store a whole new snapshot
+const publish = () => store.replace(COMMITTEES, rows);
 
 const pick = <T>(items: readonly T[]) => items[Math.floor(Math.random() * items.length)]!;
 
 function donate(committeeName: string, name: string, amountKr: number) {
     const committee = COMMITTEES.find((c) => c.name === committeeName);
     if (!committee) throw new Error(`Unknown committee ${committeeName}`);
-    store.addRow({
+    rows.push({
         timestamp: new Date().toISOString(),
         variantUuid: committee.uuid,
         variantName: committee.name,
@@ -48,7 +50,6 @@ function donate(committeeName: string, name: string, amountKr: number) {
         purchaserKey: purchaserKey(name),
         amount: Math.round(amountKr * 100),
     });
-    store.markSuccess();
 }
 
 function randomDonation() {
@@ -58,15 +59,15 @@ function randomDonation() {
 }
 
 function load(scenario: Scenario) {
-    store.clearRows();
+    rows = [];
     for (let i = 0; i < SCENARIOS[scenario]; i++) randomDonation();
-    store.markSuccess();
 }
 
 load("early");
+publish();
 
 // Keep the "Live" indicator green while the demo is running
-setInterval(() => store.markSuccess(), 5000);
+setInterval(publish, 5000);
 
 const port = Number(process.env.PORT || 3001);
 
@@ -88,6 +89,7 @@ const server = startServer(store, {
                 } else {
                     donate(body.committee, body.name ?? "", Number(body.amount ?? 15));
                 }
+                publish();
                 return Response.json({ ok: true });
             },
         },
@@ -96,6 +98,7 @@ const server = startServer(store, {
                 const { scenario } = (await req.json()) as { scenario: Scenario };
                 if (!Object.hasOwn(SCENARIOS, scenario)) return Response.json({ error: "Unknown scenario" }, { status: 400 });
                 load(scenario);
+                publish();
                 return Response.json({ ok: true });
             },
         },

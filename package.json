@@ -3,10 +3,10 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "bun scripts/with-vite.ts src/index.ts",
-        "demo": "bun scripts/with-vite.ts src/dev.ts",
+        "dev": "bun scripts/with-vite.ts server/index.ts",
+        "demo": "bun scripts/with-vite.ts server/demo.ts",
         "build": "vite build",
-        "start": "bun run src/index.ts",
+        "start": "bun run server/index.ts",
         "test": "bun test",
         "inspect": "bun run scripts/inspect-purchases.ts",
         "typecheck": "tsc --noEmit && tsc --noEmit -p web"

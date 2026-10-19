@@ -29,13 +29,12 @@ cp .env.example .env   # fill in the Zettle credentials and EVENT_START
 ## Views
 
 - `/` shows both boards, `/committees` and `/donors` show one each.
-- `?theme=` picks a design: `velvet` (default), `noir`, `invite`, `club`, `bauhaus`,
-  `utility`, `neobrutal`, `aurora`, `ethereal` or `classic`.
 
-In Asta, add a `WEBSITE` item pointing at e.g. `http://<server>:3000/?theme=velvet`.
+In Asta, add a `WEBSITE` item pointing at e.g. `http://<server>:3000/`.
 
 ## Layout
 
-- `src/` – server: Zettle client, poller, in-memory store, API and demo server
+- `server/` – Bun server: Zettle client, poller, in-memory store, API and demo server (`demo.ts`)
+- `server/types.ts` – the API types, shared with the web app
 - `web/` – the leaderboard page (Vite, React, Motion)
 - `web/public/logos/` – committee logos from [Dsek-LTH/grafik](https://github.com/Dsek-LTH/grafik)

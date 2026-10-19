@@ -1,5 +1,5 @@
 import { AnimatePresence } from "motion/react";
-import type { Committee } from "../../../src/types.ts";
+import type { Committee } from "../../../server/types.ts";
 import { plural } from "../lib/format.ts";
 import { HeroCard } from "./HeroCard.tsx";
 import { CommitteeRow } from "./rows.tsx";
@@ -19,10 +19,9 @@ export function CommitteeBoard({ committees }: { committees: Committee[] }) {
 
             {leader ? (
                 <HeroCard
-                    leader={leader.name}
+                    name={leader.name}
                     total={leader.total}
                     media={<Logo src={leader.logo} />}
-                    name={leader.name}
                     sub={<span className="sub">{plural(leader.donations, "inbetalning", "inbetalningar")}</span>}
                 />
             ) : (

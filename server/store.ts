@@ -4,8 +4,6 @@
 import { logoFor } from "./logos.ts";
 import type { Committee, Donor, Leaderboard } from "./types.ts";
 
-export type { Leaderboard };
-
 /** One alumniskatt row from a purchase */
 export type Row = {
     timestamp: string;
@@ -69,9 +67,9 @@ export function computeLeaderboard(
     const donorList: Donor[] = [...donors.values()]
         .sort((a, b) => b.total - a.total)
         .slice(0, TOP_DONORS)
-        .map(({ name, lastSeen, total, donations, byCommittee }) => {
+        .map(({ name, total, donations, byCommittee }) => {
             const favourite = [...byCommittee.values()].reduce((best, c) => (c.total > best.total ? c : best));
-            return { name, lastSeen, total, donations, favourite: favourite.name, favouriteLogo: logoFor(favourite.name) };
+            return { name, total, donations, favourite: favourite.name, favouriteLogo: logoFor(favourite.name) };
         });
 
     return {
@@ -93,27 +91,12 @@ export function createStore() {
         replace(nextVariants: CommitteeVariant[], nextRows: Row[]) {
             variants = nextVariants;
             rows = nextRows;
-            this.markSuccess();
-        },
-
-        markSuccess() {
             updatedAt = new Date().toISOString();
             lastError = null;
         },
 
         markError(message: string) {
             lastError = message;
-        },
-
-        // Used by the demo server, which builds its data a row at a time
-        setCommittees(next: CommitteeVariant[]) {
-            variants = next;
-        },
-        addRow(row: Row) {
-            rows.push(row);
-        },
-        clearRows() {
-            rows = [];
         },
 
         leaderboard(): Leaderboard {

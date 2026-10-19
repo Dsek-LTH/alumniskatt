@@ -1,9 +1,8 @@
 // Control panel for the demo server (`bun run demo`): add donations, load scenarios
 // and preview the leaderboard at different screen sizes.
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Logo } from "../components/ui.tsx";
-import { DEFAULT_THEME, THEMES } from "../lib/themes.ts";
 import "./dev.css";
 
 type Options = { committees: { name: string; logo: string }[]; names: string[] };
@@ -50,7 +49,6 @@ export default function DevPanel() {
     const [amount, setAmount] = useState(15);
     const [name, setName] = useState("Kalle Anka");
     const [auto, setAuto] = useState(false);
-    const [theme, setTheme] = useState(DEFAULT_THEME);
     const [log, setLog] = useState<{ id: number; text: string }[]>([]);
     // Bumped to reload the preview, e.g. after loading a scenario
     const [previewKey, setPreviewKey] = useState(0);
@@ -67,49 +65,40 @@ export default function DevPanel() {
         setLog((entries) => [{ id: (entries[0]?.id ?? 0) + 1, text: `${time} · ${text}` }, ...entries].slice(0, 12));
     }
 
-    async function donate(committee: string) {
+    /** Posts to the demo server and logs `text` on success, or the error */
+    async function send(path: string, body: object, text: string) {
         try {
-            await post("/dev/api/donate", { committee, name, amount });
-            const who = name.trim() || "Anonym";
-            addLog(`${who} → ${committee}, ${amount} kr`);
+            await post(path, body);
+            addLog(text);
+            return true;
         } catch (e) {
             addLog(`Fel: ${e}`);
+            return false;
         }
     }
 
-    async function randomDonation() {
-        try {
-            await post("/dev/api/donate", {});
-            addLog("Slumpad inbetalning");
-        } catch (e) {
-            addLog(`Fel: ${e}`);
-        }
-    }
+    const donate = (committee: string) =>
+        send("/dev/api/donate", { committee, name, amount }, `${name.trim() || "Anonym"} → ${committee}, ${amount} kr`);
+
+    const randomDonation = () => send("/dev/api/donate", {}, "Slumpad inbetalning");
 
     async function loadScenario(scenario: { value: string; label: string }) {
-        try {
-            await post("/dev/api/scenario", { scenario: scenario.value });
-            addLog(`Scenario: ${scenario.label}`);
-            // Reload so the board starts fresh instead of animating every row at once
+        // Reload so the board starts fresh instead of animating every row at once
+        if (await send("/dev/api/scenario", { scenario: scenario.value }, `Scenario: ${scenario.label}`)) {
             setPreviewKey((k) => k + 1);
-        } catch (e) {
-            addLog(`Fel: ${e}`);
         }
     }
 
-    // A ref so the interval always calls the latest randomDonation
-    const randomRef = useRef(randomDonation);
-    randomRef.current = randomDonation;
+    // randomDonation only uses state setters, so the first one stays valid
     useEffect(() => {
         if (!auto) return;
-        const timer = setInterval(() => randomRef.current(), 2500);
+        const timer = setInterval(randomDonation, 2500);
         return () => clearInterval(timer);
     }, [auto]);
 
     const pickName = () => setName(options.names[Math.floor(Math.random() * options.names.length)] ?? "");
 
-    const params = new URLSearchParams({ refresh: "1", theme });
-    const previewUrl = `/${view}?${params}`;
+    const previewUrl = `/${view}?refresh=1`;
 
     return (
         <div className="dev-panel">
@@ -120,17 +109,6 @@ export default function DevPanel() {
 
                 <Group title="Vy">
                     <Segmented items={VIEWS} value={view} onChange={setView} />
-                </Group>
-
-                <Group title="Tema">
-                    <div className="themes">
-                        {THEMES.map((t) => (
-                            <button key={t.id} aria-pressed={t.id === theme} onClick={() => setTheme(t.id)}>
-                                <strong>{t.label}</strong>
-                                <span>{t.description}</span>
-                            </button>
-                        ))}
-                    </div>
                 </Group>
 
                 <Group title="Skärm">
@@ -207,7 +185,7 @@ export default function DevPanel() {
     );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+function Group({ title, children }: { title: string; children: ReactNode }) {
     return (
         <section>
             <h2>{title}</h2>

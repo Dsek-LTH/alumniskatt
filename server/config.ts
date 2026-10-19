@@ -4,8 +4,7 @@ function required(name: string): string {
     return value;
 }
 
-
-// Paypal stores times in UTC, shift to account for our timezone. 
+// Local midnight (TZ=Europe/Stockholm in Docker), as an ISO string in UTC
 function startOfToday(): string {
     const d = new Date();
     d.setHours(0, 0, 0, 0);

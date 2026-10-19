@@ -1,5 +1,5 @@
 import { AnimatePresence } from "motion/react";
-import type { Donor } from "../../../src/types.ts";
+import type { Donor } from "../../../server/types.ts";
 import { HeroCard } from "./HeroCard.tsx";
 import { DonorRow } from "./rows.tsx";
 import { FavouriteLine, Monogram } from "./ui.tsx";
@@ -13,10 +13,9 @@ export function DonorBoard({ donors }: { donors: Donor[] }) {
 
             {top ? (
                 <HeroCard
-                    leader={top.name}
+                    name={top.name}
                     total={top.total}
                     media={<Monogram name={top.name} />}
-                    name={top.name}
                     sub={<FavouriteLine donor={top} />}
                 />
             ) : (

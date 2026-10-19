@@ -23,7 +23,7 @@ test("sums per committee, lists empty ones last and keeps their order", () => {
         ["Sexmästeriet", 1500, 1],
         ["Cafémästeriet", 0, 0],
     ]);
-    expect(board.committees[0]!.logo).toBe("logos/km.svg");
+    expect(board.committees[0]!.logo).toBe("logos/kallarmasteriet.svg");
 });
 
 test("anonymous rows count for committees but not on the donor board", () => {
@@ -39,7 +39,7 @@ test("donors show their latest spelling and the committee they gave most to", ()
     ];
     const [donor] = computeLeaderboard(variants, rows).donors;
     expect(donor).toMatchObject({ name: "Kalle Anka", total: 4500, donations: 2, favourite: "Sexmästeriet" });
-    expect(donor!.favouriteLogo).toBe("logos/sexm.svg");
+    expect(donor!.favouriteLogo).toBe("logos/sexmasteriet.svg");
 });
 
 test("only the top ten donors are shown", () => {

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import type { Ref } from "react";
-import type { Committee, Donor } from "../../../src/types.ts";
+import type { Committee, Donor } from "../../../server/types.ts";
 import { kr } from "../lib/format.ts";
 import { useBump } from "../lib/hooks.ts";
 import { BumpEffects, FavouriteLine, Logo, Rank } from "./ui.tsx";

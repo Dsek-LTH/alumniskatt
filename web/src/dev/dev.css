@@ -37,11 +37,6 @@
 .dev-panel .actions button { flex: 1; padding: 7px 10px; white-space: nowrap; }
 .dev-panel .segmented button[aria-pressed="true"] { background: var(--text); border-color: var(--text); color: #fff; }
 
-.dev-panel .themes { display: flex; flex-direction: column; gap: 4px; }
-.dev-panel .themes button { display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; text-align: left; }
-.dev-panel .themes span { font-size: 12px; color: var(--muted); }
-.dev-panel .themes button[aria-pressed="true"] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
-
 .dev-panel .donor-input { display: flex; gap: 4px; }
 .dev-panel .donor-input input {
     flex: 1;

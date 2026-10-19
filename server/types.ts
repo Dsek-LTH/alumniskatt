@@ -4,7 +4,6 @@ export type Committee = { name: string; logo: string; total: number; donations: 
 
 export type Donor = {
     name: string;
-    lastSeen: string;
     total: number;
     donations: number;
     favourite: string;

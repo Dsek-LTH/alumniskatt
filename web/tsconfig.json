@@ -11,5 +11,5 @@
         "skipLibCheck": true,
         "allowImportingTsExtensions": true
     },
-    "include": ["src", "../src/types.ts"]
+    "include": ["src", "../server/types.ts"]
 }

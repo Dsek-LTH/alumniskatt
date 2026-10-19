@@ -4,7 +4,7 @@
 //   bun run inspect 2026-10-01   # since a date
 //   bun run inspect --raw        # also dump the raw JSON of the newest purchase
 
-import { clientFromEnv } from "../src/zettle.ts";
+import { clientFromEnv } from "../server/zettle.ts";
 
 const args = process.argv.slice(2);
 const raw = args.includes("--raw");

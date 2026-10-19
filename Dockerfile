@@ -11,7 +11,7 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 COPY tsconfig.json vite.config.ts ./
-COPY src ./src
+COPY server ./server
 COPY web ./web
 RUN bun run build
 
@@ -24,7 +24,7 @@ WORKDIR /app
 # tzdata makes TZ work, so EVENT_START's default ("midnight today") is Swedish midnight.
 RUN apk add --no-cache tzdata
 
-COPY --from=build /app/src ./src
+COPY --from=build /app/server ./server
 COPY --from=build /app/web/dist ./web/dist
 
 ENV TZ=Europe/Stockholm \
@@ -37,4 +37,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
     CMD wget -qO- http://localhost:3000/health || exit 1
 
-CMD ["bun", "run", "src/index.ts"]
+CMD ["bun", "run", "server/index.ts"]

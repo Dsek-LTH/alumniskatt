@@ -1,21 +1,17 @@
-import type { Donor } from "../../../src/types.ts";
+import type { Donor } from "../../../server/types.ts";
 import { kr } from "../lib/format.ts";
 import type { Bump } from "../lib/hooks.ts";
-import { useTheme } from "../lib/themes.ts";
 
-// Logo paths come from our own API ("logos/km.svg"), never from the till.
-// Dark themes use the variants in logos/dark/, drawn for dark backgrounds.
+// Logo paths come from our own API ("logos/kallarmasteriet.svg"), never from the till.
 export function Logo({ src, className = "logo" }: { src: string; className?: string }) {
-    const { dark } = useTheme();
-    const path = dark ? src.replace(/^logos\//, "logos/dark/") : src;
-    return <img className={className} src={`/${path}`} alt="" />;
+    return <img className={className} src={`/${src}`} alt="" />;
 }
 
 export function Rank({ n }: { n: number }) {
     return <span className="rank">{n}</span>;
 }
 
-/** "9 st · mest till 🍺 Sexmästeriet" */
+/** "9 st - mest till <logo> Sexmästeriet" */
 export function FavouriteLine({ donor }: { donor: Donor }) {
     return (
         <span className="sub">

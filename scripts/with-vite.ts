@@ -1,7 +1,7 @@
 // Runs a Bun API server and the Vite dev server together; Ctrl+C stops both.
 //
-//   bun scripts/with-vite.ts src/dev.ts     (bun run demo)
-//   bun scripts/with-vite.ts src/index.ts   (bun run dev)
+//   bun scripts/with-vite.ts server/demo.ts    (bun run demo)
+//   bun scripts/with-vite.ts server/index.ts   (bun run dev)
 
 const entry = process.argv[2];
 if (!entry) throw new Error("Usage: bun scripts/with-vite.ts <server entry>");

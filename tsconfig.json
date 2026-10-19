@@ -9,5 +9,5 @@
         "skipLibCheck": true,
         "allowImportingTsExtensions": true
     },
-    "include": ["src", "scripts"]
+    "include": ["server", "scripts"]
 }
