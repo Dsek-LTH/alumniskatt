@@ -18,6 +18,9 @@ export type CommitteeVariant = { uuid: string; name: string };
 
 const TOP_DONORS = 10;
 
+/** Swedish alphabetical order, so Å, Ä and Ö come last */
+export const bySwedishName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, "sv");
+
 /** Sums the rows per committee and per donor. Every row is one donation. */
 export function computeLeaderboard(
     variants: CommitteeVariant[],
@@ -25,8 +28,8 @@ export function computeLeaderboard(
 ): Omit<Leaderboard, "updatedAt" | "lastError"> {
     // Every committee is listed, even at 0 kr, so empty ones get shamed too. Rows for a
     // variant that has since been removed from the product still count, under their own name.
-    const committees = new Map<string, { name: string; position: number; total: number; donations: number }>();
-    variants.forEach((v, position) => committees.set(v.uuid, { name: v.name, position, total: 0, donations: 0 }));
+    const committees = new Map<string, { name: string; total: number; donations: number }>();
+    for (const v of variants) committees.set(v.uuid, { name: v.name, total: 0, donations: 0 });
 
     const donors = new Map<
         string,
@@ -36,7 +39,7 @@ export function computeLeaderboard(
     for (const row of rows) {
         let committee = committees.get(row.variantUuid);
         if (!committee) {
-            committee = { name: row.variantName, position: Infinity, total: 0, donations: 0 };
+            committee = { name: row.variantName, total: 0, donations: 0 };
             committees.set(row.variantUuid, committee);
         }
         committee.total += row.amount;
@@ -61,7 +64,8 @@ export function computeLeaderboard(
     }
 
     const committeeList: Committee[] = [...committees.values()]
-        .sort((a, b) => b.total - a.total || a.position - b.position)
+        // Ties, such as everyone in Skamvrån at 0 kr, in alphabetical order
+        .sort((a, b) => b.total - a.total || bySwedishName(a, b))
         .map(({ name, total, donations }) => ({ name, logo: logoFor(name), total, donations }));
 
     const donorList: Donor[] = [...donors.values()]

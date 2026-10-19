@@ -45,7 +45,7 @@ html, body {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     gap: calc(var(--u) * 3);
-    padding: calc(var(--u) * 3.5) max(16px, calc(var(--u) * 4.5));
+    padding: calc(var(--u) * 2.5) max(16px, calc(var(--u) * 3));
     overflow-x: hidden;
     font-size: calc(var(--u) * 2.3);
 }
@@ -87,7 +87,7 @@ html, body {
 /* "INSAMLAT  2 190 kr  90 inbetalningar" on one line, so the header is no taller than the title */
 .total { display: flex; align-items: baseline; gap: calc(var(--u) * 1.5); white-space: nowrap; }
 .total .label {
-    font-size: calc(var(--u) * 1.6);
+    font-size: calc(var(--u) * 2.1);
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--muted);
@@ -95,7 +95,7 @@ html, body {
 .total .amount {
     display: inline-block;
     padding: 0 0.25em;
-    font-size: calc(var(--u) * 7);
+    font-size: calc(var(--u) * 9);
     line-height: 1.05;
     background: var(--lime);
     transform: rotate(1deg);
@@ -105,7 +105,7 @@ html, body {
     from { color: var(--infocom); }
     to { color: var(--text); }
 }
-.total .count { font-size: calc(var(--u) * 1.9); color: var(--muted); }
+.total .count { font-size: calc(var(--u) * 2.4); line-height: 1; color: var(--muted); }
 
 /* ---------- boards ---------- */
 
@@ -363,12 +363,17 @@ html, body {
     .leaderboard main { grid-template-columns: minmax(0, 1fr); }
     .leaderboard,
     .leaderboard[data-mode] { --u: max(7px, calc(min(1vh, 2.2vw) * var(--fit))); }
+    /* A single board is sized up here, so the 3u gaps around it would be oversized */
+    .leaderboard[data-mode] { gap: calc(var(--u) * 1.5); }
+    /* The board's 8px shadow fills part of the gap below it; pull the board up
+       by as much so the gaps above and below it look the same */
+    .leaderboard[data-mode] header { margin-bottom: -8px; }
     /* Too narrow for the total on one line: stack it beside the title instead,
        with both capped by the width so they always share the row */
     .leaderboard header { align-items: center; }
     .leaderboard h1 { font-size: min(calc(var(--u) * 6.4), 6vw); }
     .total { display: block; text-align: right; }
-    .total .amount { font-size: min(calc(var(--u) * 7), 5.5vw); }
+    .total .amount { font-size: min(calc(var(--u) * 9), 7vw); }
 }
 
 /* Phones scroll, so size by width alone (--fit is ignored) and give every name

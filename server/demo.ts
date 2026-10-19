@@ -6,7 +6,7 @@
 import { logoFor } from "./logos.ts";
 import { purchaserKey } from "./poller.ts";
 import { servePage, startServer } from "./server.ts";
-import { createStore, type Row } from "./store.ts";
+import { bySwedishName, createStore, type Row } from "./store.ts";
 
 const COMMITTEES = [
     "Cafémästeriet", "Centralprocessorutskottet", "Skattmästeriet", "Framtidsutskottet",
@@ -78,7 +78,7 @@ const server = startServer(store, {
         "/dev": servePage,
         "/dev/api/options": () =>
             Response.json({
-                committees: COMMITTEES.map((c) => ({ name: c.name, logo: logoFor(c.name) })),
+                committees: COMMITTEES.toSorted(bySwedishName).map((c) => ({ name: c.name, logo: logoFor(c.name) })),
                 names: NAMES,
             }),
         "/dev/api/donate": {

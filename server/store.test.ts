@@ -16,7 +16,7 @@ const row = (variantUuid: string, purchaser: string, amount: number, minute = 0)
     amount,
 });
 
-test("sums per committee, lists empty ones last and keeps their order", () => {
+test("sums per committee and lists empty ones last", () => {
     const board = computeLeaderboard(variants, [row("km", "A", 1500), row("km", "B", 1500), row("sexm", "A", 1500)]);
     expect(board.committees.map((c) => [c.name, c.total, c.donations])).toEqual([
         ["Källarmästeriet", 3000, 2],
@@ -24,6 +24,17 @@ test("sums per committee, lists empty ones last and keeps their order", () => {
         ["Cafémästeriet", 0, 0],
     ]);
     expect(board.committees[0]!.logo).toBe("logos/kallarmasteriet.svg");
+});
+
+test("committees with the same total are in Swedish alphabetical order", () => {
+    const ties = [
+        { uuid: "o", name: "Övriga" },
+        { uuid: "a", name: "Aktivitetsutskottet" },
+        { uuid: "k", name: "Källarmästeriet" },
+        { uuid: "z", name: "Ändringsrådet" },
+    ];
+    const board = computeLeaderboard(ties, []);
+    expect(board.committees.map((c) => c.name)).toEqual(["Aktivitetsutskottet", "Källarmästeriet", "Ändringsrådet", "Övriga"]);
 });
 
 test("anonymous rows count for committees but not on the donor board", () => {
