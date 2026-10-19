@@ -29,6 +29,9 @@ cp .env.example .env   # fill in the Zettle credentials and EVENT_START
 ## Views
 
 - `/` shows both boards, `/committees` and `/donors` show one each.
+- `/demo`, `/demo/committees` and `/demo/donors` show the same views on fake data, with a
+  donation every few seconds, for checking how the board looks on the real screens.
+  It starts over once the board is full, and the footer says "Demo" instead of "Live".
 
 In Asta, add a `WEBSITE` item pointing at e.g. `http://<server>:3000/`.
 

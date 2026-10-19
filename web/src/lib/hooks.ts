@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { Leaderboard } from "../../../server/types.ts";
 
-/** Polls the leaderboard API. Returns null until the first response. */
-export function useLeaderboard(refreshMs: number): Leaderboard | null {
+/** Polls the leaderboard API at `url`. Returns null until the first response. */
+export function useLeaderboard(url: string, refreshMs: number): Leaderboard | null {
     const [data, setData] = useState<Leaderboard | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const load = async () => {
             try {
-                const res = await fetch("/api/leaderboard");
+                const res = await fetch(url);
                 if (res.ok && !cancelled) setData(await res.json());
             } catch (e) {
                 console.error(e);
@@ -21,7 +21,7 @@ export function useLeaderboard(refreshMs: number): Leaderboard | null {
             cancelled = true;
             clearInterval(timer);
         };
-    }, [refreshMs]);
+    }, [url, refreshMs]);
 
     return data;
 }

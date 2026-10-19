@@ -9,6 +9,6 @@ export default defineConfig({
     plugins: [react()],
     build: { outDir: "dist", emptyOutDir: true },
     server: {
-        proxy: { "/api": api, "/dev/api": api, "/health": api },
+        proxy: { "/api": api, "/dev/api": api, "/demo/api": api, "/health": api },
     },
 });

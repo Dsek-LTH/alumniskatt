@@ -1,80 +1,27 @@
 // Demo API: the real leaderboard API on fake, in-memory data, plus the endpoints the
 // control panel at /dev uses to add donations and load scenarios. No Zettle needed.
+// /demo runs on a separate simulation that adds donations by itself, like on the real server.
 //
-//   bun run demo    → open http://localhost:5173/dev (Vite proxies the API to this server)
+//   bun run demo    → open http://localhost:5173/dev or http://localhost:5173/demo
 
 import { logoFor } from "./logos.ts";
-import { purchaserKey } from "./poller.ts";
 import { servePage, startServer } from "./server.ts";
-import { bySwedishName, createStore, type Row } from "./store.ts";
+import { COMMITTEES, createSimulation, demoRoutes, NAMES, SCENARIOS, simulateActivity, type Scenario } from "./simulation.ts";
+import { bySwedishName } from "./store.ts";
 
-const COMMITTEES = [
-    "Cafémästeriet", "Centralprocessorutskottet", "Skattmästeriet", "Framtidsutskottet",
-    "Nollningsutskottet", "Aktivitetsutskottet", "Informationsutskottet", "Källarmästeriet",
-    "Medaljelelekommiten", "Näringslivsutskottet", "Sexmästeriet", "Studierådet",
-    "Tackmästeriet", "Trivselrådet", "Valberedningen", "Styrelsen",
-].map((name, i) => ({ uuid: `dev-${i}`, name }));
-
-const NAMES = [
-    "Kalle Anka", "Kajsa Anka", "Musse Pigg", "Mimmi Pigg", "Långben", "Pluto",
-    "Joakim von Anka", "Oppfinnar-Jocke", "Alexander Lukas", "Klarabella", "Hexia de Trix",
-    "Svarte Petter", "Farmor Anka", "Knatte", "Fnatte", "Tjatte",
-];
-
-const SCENARIOS = {
-    // Nothing sold yet: empty states on both boards
-    empty: 0,
-    // Early in the evening: a few committees on the board, most in Skamvrån
-    early: 8,
-    // Late in the evening: every board full
-    full: 90,
-} as const;
-
-type Scenario = keyof typeof SCENARIOS;
-
-const store = createStore();
-let rows: Row[] = [];
-// Like the poller, every change hands the store a whole new snapshot
-const publish = () => store.replace(COMMITTEES, rows);
-
-const pick = <T>(items: readonly T[]) => items[Math.floor(Math.random() * items.length)]!;
-
-function donate(committeeName: string, name: string, amountKr: number) {
-    const committee = COMMITTEES.find((c) => c.name === committeeName);
-    if (!committee) throw new Error(`Unknown committee ${committeeName}`);
-    rows.push({
-        timestamp: new Date().toISOString(),
-        variantUuid: committee.uuid,
-        variantName: committee.name,
-        purchaserRaw: name.trim(),
-        purchaserKey: purchaserKey(name),
-        amount: Math.round(amountKr * 100),
-    });
-}
-
-function randomDonation() {
-    // Skew towards a few popular committees, so the scenarios have a clear leader
-    const committee = Math.random() < 0.6 ? pick(COMMITTEES.slice(0, 6)) : pick(COMMITTEES);
-    donate(committee.name, pick(NAMES), pick([15, 15, 15, 30, 45]));
-}
-
-function load(scenario: Scenario) {
-    rows = [];
-    for (let i = 0; i < SCENARIOS[scenario]; i++) randomDonation();
-}
-
-load("early");
-publish();
-
-// Keep the "Live" indicator green while the demo is running
-setInterval(publish, 5000);
+// Driven by the control panel
+const sim = createSimulation();
+// Adds donations by itself, for /demo
+const auto = createSimulation();
+simulateActivity(auto);
 
 const port = Number(process.env.PORT || 3001);
 
-const server = startServer(store, {
+const server = startServer(sim.store, {
     port,
     pollIntervalS: 60,
     extraRoutes: {
+        ...demoRoutes(auto),
         "/dev": servePage,
         "/dev/api/options": () =>
             Response.json({
@@ -85,11 +32,10 @@ const server = startServer(store, {
             POST: async (req) => {
                 const body = (await req.json()) as { committee?: string; name?: string; amount?: number };
                 if (!body.committee) {
-                    randomDonation();
+                    sim.randomDonation();
                 } else {
-                    donate(body.committee, body.name ?? "", Number(body.amount ?? 15));
+                    sim.donate(body.committee, body.name ?? "", Number(body.amount ?? 15));
                 }
-                publish();
                 return Response.json({ ok: true });
             },
         },
@@ -97,8 +43,7 @@ const server = startServer(store, {
             POST: async (req) => {
                 const { scenario } = (await req.json()) as { scenario: Scenario };
                 if (!Object.hasOwn(SCENARIOS, scenario)) return Response.json({ error: "Unknown scenario" }, { status: 400 });
-                load(scenario);
-                publish();
+                sim.load(scenario);
                 return Response.json({ ok: true });
             },
         },

@@ -8,10 +8,10 @@ import { Header } from "./Header.tsx";
 
 export type Mode = "both" | "committees" | "donors";
 
-type Props = { mode: Mode; refreshMs: number };
+type Props = { mode: Mode; demo: boolean; refreshMs: number };
 
-export function Leaderboard({ mode, refreshMs }: Props) {
-    const data = useLeaderboard(refreshMs);
+export function Leaderboard({ mode, demo, refreshMs }: Props) {
+    const data = useLeaderboard(demo ? "/demo/api/leaderboard" : "/api/leaderboard", refreshMs);
     const ref = useRef<HTMLDivElement>(null);
     useFitToScreen(ref, [data, mode]);
 
@@ -23,7 +23,7 @@ export function Leaderboard({ mode, refreshMs }: Props) {
                     {data && mode !== "donors" && <CommitteeBoard committees={data.committees} />}
                     {data && mode !== "committees" && <DonorBoard donors={data.donors} />}
                 </main>
-                <Footer updatedAt={data?.updatedAt ?? null} />
+                <Footer updatedAt={data?.updatedAt ?? null} demo={demo} />
             </div>
         </MotionConfig>
     );

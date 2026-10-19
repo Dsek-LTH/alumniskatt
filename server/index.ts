@@ -1,6 +1,7 @@
 import { config } from "./config.ts";
 import { startPoller } from "./poller.ts";
 import { startServer } from "./server.ts";
+import { createSimulation, demoRoutes, simulateActivity } from "./simulation.ts";
 import { createStore } from "./store.ts";
 import { ZettleClient } from "./zettle.ts";
 
@@ -14,6 +15,15 @@ startPoller(store, zettle, {
     intervalS: config.pollIntervalS,
 });
 
-const server = startServer(store, { port: config.port, pollIntervalS: config.pollIntervalS });
+// /demo shows the board on simulated donations, for checking how it looks on the
+// real screens with activity going on. It has its own store, apart from Zettle's.
+const demo = createSimulation();
+simulateActivity(demo);
+
+const server = startServer(store, {
+    port: config.port,
+    pollIntervalS: config.pollIntervalS,
+    extraRoutes: demoRoutes(demo),
+});
 
 console.log(`alumniskatt listening on ${server.url} (event window from ${config.eventStart()})`);
