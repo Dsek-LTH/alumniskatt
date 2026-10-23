@@ -1,4 +1,5 @@
-/* Neo-brutalism: black outlines, hard shadows and flat bright colours */
+/* Neo-brutalism with a bit of tax form: numbered sections, tick boxes and
+   the leader's amount stamped on, over confetti and patterns for pop */
 
 :root {
     /* Guild colours: D-sek pink (the Pink Panther) and InfoCom purple */
@@ -12,16 +13,36 @@
 
     --bg: #fff3d6;
     --card: #ffffff;
+    /* Outlines and hard shadows */
     --line: #111;
     --text: #111;
     --muted: #3d3d3d;
     --faint: #6b6b6b;
-    --ok: #22c55e;
+    /* Text and frames on the bright fills (pink, purple, lime), dark in both themes */
+    --ink: #111;
+    /* Faint marks on the boards: dot grid, bar ticks, placeholder rows */
+    --dim: #11111126;
+    --ok: #1f9d55;
     --bad: #d64545;
 
     /* Loaded from Google Fonts in index.html */
     --display: "Archivo Black", Impact, sans-serif;
     --sans: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* Dark theme for the pub in the evening (see useTheme in App.tsx): dark boards with
+   cream outlines and shadows, while the pink, purple and lime fills stay as they are */
+:root[data-theme="dark"] {
+    --bg: #17141c;
+    --card: #221e29;
+    --line: #f4e9cf;
+    --text: #f4e9cf;
+    --muted: #c4bba9;
+    --faint: #8e877b;
+    --dim: #f4e9cf24;
+    --dsek-ink: #ff8fc1;
+    --infocom-ink: #b9a3ff;
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -36,18 +57,38 @@ html, body {
 .leaderboard {
     /* Every size is a multiple of --u, so the layout scales as one piece.
        Side by side it follows the height, shrinking if the screen gets narrow.
-       --fit is lowered by useFitToScreen until everything fits on screen. */
+       --fit is lowered by useFitToScreen until everything fits on screen.
+       The page's margins and the gaps between header, boards and footer use
+       --u0, the unit before fitting, so they stay the same on every view. */
     --fit: 1;
-    --u: calc(min(1vh, 0.75vw) * var(--fit));
+    --u0: min(1vh, 0.75vw);
+    --u: calc(var(--u0) * var(--fit));
 
     min-height: 100vh;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr auto;
-    gap: calc(var(--u) * 3);
-    padding: calc(var(--u) * 2.5) max(16px, calc(var(--u) * 3));
+    grid-template-rows: auto 1fr auto auto;
+    gap: calc(var(--u0) * 3);
+    padding: calc(var(--u0) * 2.5) max(16px, calc(var(--u0) * 3));
     overflow-x: hidden;
     font-size: calc(var(--u) * 2.3);
+    /* For the confetti layer below, kept behind everything else */
+    position: relative;
+    isolation: isolate;
+}
+
+/* Confetti of outlined shapes in the guild colours, scaling with the layout.
+   On a layer of its own so it can fade out smoothly around the title and footer. */
+.leaderboard::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 480'%3E%3Cg stroke='%23111' stroke-width='3.5' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M60 42 68 62 88 70 68 78 60 98 52 78 32 70 52 62Z' fill='%23ff6fae' transform='rotate(-10 60 70)'/%3E%3Ccircle cx='300' cy='40' r='12' fill='%23b8f35b'/%3E%3Cpath d='M420 112l18 30h-36Z' fill='%239b7bff' transform='rotate(20 420 130)'/%3E%3Cpath d='M172 202h8v-8h8v8h8v8h-8v8h-8v-8h-8Z' fill='%23b8f35b' transform='rotate(15 184 210)'/%3E%3Cpath d='M30 336q11-18 22 0t22 0 22 0' fill='none' stroke-width='13'/%3E%3Cpath d='M30 336q11-18 22 0t22 0 22 0' fill='none' stroke='%239b7bff' stroke-width='6'/%3E%3Ccircle cx='380' cy='300' r='9' fill='%23ff6fae'/%3E%3Ccircle cx='250' cy='120' r='4.5' fill='%23111'/%3E%3Cpath d='M300 402 305 415 318 420 305 425 300 438 295 425 282 420 295 415Z' fill='%23b8f35b'/%3E%3Ccircle cx='150' cy='440' r='9' fill='%23fff3d6'/%3E%3Cpath d='M440 416l14 24h-28Z' fill='%23ff6fae' transform='rotate(-25 440 430)'/%3E%3Ccircle cx='30' cy='200' r='4' fill='%23111'/%3E%3Cpath d='M250 300q8-16 16 0t16 0' fill='none' stroke='%23ff6fae' stroke-width='5'/%3E%3C/g%3E%3C/svg%3E") 0 0 / calc(var(--u) * 48);
+    mask-image:
+        radial-gradient(calc(var(--u) * 50) calc(var(--u) * 13) at calc(var(--u) * 30) calc(var(--u) * 8), transparent 60%, black 100%),
+        linear-gradient(to top, transparent calc(var(--u) * 4), black calc(var(--u) * 10));
+    mask-composite: intersect;
 }
 
 .num { font-variant-numeric: tabular-nums; }
@@ -55,21 +96,12 @@ html, body {
 /* The Archivo Black display font has a single weight */
 .leaderboard h1,
 .board h2,
-.total .label,
 .total .amount,
 .hero .name,
 .hero .money,
 .monogram {
     font-family: var(--display);
     font-weight: 400;
-}
-
-/* Stickers: flat colour, black outline and a hard shadow */
-.board h2,
-.total .amount,
-.hero .money {
-    border: 3px solid var(--line);
-    box-shadow: 4px 4px 0 var(--line);
 }
 
 /* ---------- header ---------- */
@@ -84,37 +116,72 @@ html, body {
 
 .leaderboard h1 { font-size: calc(var(--u) * 6.4); line-height: 1; text-transform: uppercase; }
 
-/* "INSAMLAT  2 190 kr  90 inbetalningar" on one line, so the header is no taller than the title */
-.total { display: flex; align-items: baseline; gap: calc(var(--u) * 1.5); white-space: nowrap; }
-.total .label {
-    font-size: calc(var(--u) * 2.1);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--muted);
+/* Footer text clears a patch of the confetti, fading out at the edges */
+.steps span,
+.status {
+    background: var(--bg);
+    box-shadow: 0 0 0.6em 0.5em var(--bg);
 }
-.total .amount {
+/* A pink sparkle sticker after the title */
+.leaderboard h1::after {
+    content: "";
     display: inline-block;
-    padding: 0 0.25em;
-    font-size: calc(var(--u) * 9);
-    line-height: 1.05;
+    width: 0.75em;
+    aspect-ratio: 1;
+    margin-left: 0.15em;
+    vertical-align: 0.15em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpath d='M40 4 49 31 76 40 49 49 40 76 31 49 4 40 31 31Z' fill='%23ff6fae' stroke='%23111' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    transform: rotate(12deg);
+}
+
+/* The total is the form's sum field: a box with its label set into the top border */
+.total {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: calc(var(--u) * 2);
+    padding: calc(var(--u) * 1.2) calc(var(--u) * 2) calc(var(--u) * 0.6);
+    white-space: nowrap;
+    color: var(--ink);
     background: var(--lime);
+    border: 3px solid var(--line);
+    box-shadow: 5px 5px 0 var(--line);
     transform: rotate(1deg);
 }
+.total .label {
+    position: absolute;
+    top: 0;
+    left: calc(var(--u) * 1.2);
+    transform: translateY(-55%);
+    padding: 0 0.4em;
+    font-size: calc(var(--u) * 1.6);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--lime);
+}
+.total .amount { font-size: calc(var(--u) * 9); line-height: 1; }
 .total .amount.bumped { animation: total-bump 1.5s ease-out; }
 @keyframes total-bump {
-    from { color: var(--infocom); }
-    to { color: var(--text); }
+    0% { color: #5a3fd1; transform: scale(1); }
+    8% { transform: scale(1.12) rotate(-2deg); }
+    25% { transform: scale(1); }
+    100% { color: var(--ink); }
 }
-.total .count { font-size: calc(var(--u) * 2.4); line-height: 1; color: var(--muted); }
+.total .count { font-size: calc(var(--u) * 2.2); line-height: 1; }
 
 /* ---------- boards ---------- */
 
 /* minmax(0, …) so long names shrink with the screen instead of widening the board */
 .leaderboard main {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    gap: calc(var(--u) * 3);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: calc(var(--u0) * 3);
     min-height: 0;
+    counter-reset: section;
+    /* Keeps the boards' z-index -1 layers (below) above the page background */
+    isolation: isolate;
 }
 
 .board {
@@ -123,11 +190,12 @@ html, body {
     --accent: var(--dsek);
     --accent-ink: var(--dsek-ink);
     --accent-soft: var(--dsek-soft);
-    background: var(--card);
+    --pad-y: calc(var(--u) * 2.8);
+    --pad-x: calc(var(--u) * 3);
+    position: relative;
+    counter-increment: section;
     border: 3px solid var(--line);
-    border-radius: 14px;
-    box-shadow: 8px 8px 0 var(--line);
-    padding: calc(var(--u) * 2.8) calc(var(--u) * 3);
+    padding: var(--pad-y) var(--pad-x);
     display: flex;
     flex-direction: column;
     gap: calc(var(--u) * 2);
@@ -139,20 +207,59 @@ html, body {
     --accent-soft: var(--infocom-soft);
 }
 
-/* Board titles are tilted stickers */
+/* A hatched shadow instead of a solid one, drawn on a layer behind the board.
+   The board's paper then has to be a layer too, stacked above the hatching. */
+.board::before,
+.board::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+}
+.board::before {
+    inset: -3px;
+    transform: translate(8px, 8px);
+    background: repeating-linear-gradient(-45deg, var(--line) 0 2px, transparent 2px 5px);
+}
+.board::after {
+    inset: 0;
+    background: radial-gradient(circle, var(--dim) 0.09em, transparent 0.11em) 0 0 / 1.2em 1.2em, var(--card);
+}
+
+/* Section headings run across the top of the board like a form's black band,
+   numbered in a box of the board's colour */
 .board h2 {
-    width: fit-content;
-    padding: 0.1em 0.5em;
-    font-size: calc(var(--u) * 3.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: calc(var(--pad-y) * -1) calc(var(--pad-x) * -1) 0;
+    /* Room on the right so the title wraps before running into the stripes */
+    padding: 0.2em calc(14% + 0.5em) 0.2em 0;
+    font-size: calc(var(--u) * 3);
+    line-height: 1.3;
     text-transform: uppercase;
+    /* Stripes in the board's colour run out the band's right end */
+    background:
+        repeating-linear-gradient(-45deg, var(--accent) 0 0.22em, transparent 0.22em 0.5em) right / 14% 100% no-repeat,
+        var(--line);
+    color: var(--card);
+}
+.board h2::before {
+    content: counter(section);
+    display: grid;
+    place-items: center;
+    align-self: stretch;
+    margin: -0.2em 0;
+    padding: 0 0.5em;
     background: var(--accent);
-    transform: rotate(-1.5deg);
+    color: var(--ink);
+    border-right: 3px solid var(--line);
 }
 
 /* position: relative so rows leaving the list (popLayout) are placed within it */
 .board ol { position: relative; list-style: none; padding: 0; display: flex; flex-direction: column; gap: calc(var(--u) * 0.9); }
 
-.board li { position: relative; isolation: isolate; border-radius: 0.4em; }
+.board li { position: relative; isolation: isolate; }
 
 /* A row whose total just grew flashes and shows how much came in.
    Both are remounted per bump (see BumpEffects), which restarts the animation. */
@@ -160,7 +267,6 @@ html, body {
     position: absolute;
     inset: 0;
     z-index: -1;
-    border-radius: inherit;
     background: var(--accent-soft);
     pointer-events: none;
     animation: flash 2.4s ease-out forwards;
@@ -173,7 +279,7 @@ html, body {
     position: absolute;
     right: 5.5em;
     top: 50%;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--accent-ink);
     pointer-events: none;
     animation: rise 2.4s ease-out forwards;
@@ -184,19 +290,19 @@ html, body {
     100% { opacity: 0; transform: translateY(-160%); }
 }
 
+/* Ranks are the form's numbered tick boxes */
 .rank {
     display: grid;
     place-items: center;
-    width: 1.6em;
-    height: 1.6em;
+    width: 1.7em;
+    height: 1.7em;
     border: 2.5px solid var(--line);
-    border-radius: 50%;
     font-size: 0.8em;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--muted);
     background: var(--card);
 }
-.podium .rank { background: var(--accent); color: var(--text); }
+.podium .rank { background: var(--accent); color: var(--ink); }
 /* Names wrap rather than being cut off; only committee names are hyphenated */
 .name { font-weight: 600; overflow-wrap: anywhere; }
 .committees-board .name { hyphens: auto; }
@@ -215,18 +321,26 @@ html, body {
     padding: 0.1em 0.2em;
 }
 
-.bar-track { height: 1.05em; background: var(--card); border: 2.5px solid var(--line); border-radius: 99px; overflow: hidden; }
+/* Bars are filled in on a scale with a tick at every quarter */
+.bar-track {
+    height: 1em;
+    border: 2px solid var(--line);
+    background:
+        repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--dim) calc(25% - 1px) 25%),
+        var(--card);
+}
 .bar {
     height: 100%;
     min-width: 0.9em;
-    background: var(--accent);
+    border-right: 2px solid var(--line);
+    background: repeating-linear-gradient(-45deg, var(--accent) 0 0.3em, var(--accent-ink) 0.3em 0.4em);
     transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .shame {
     margin-top: auto;
     padding-top: calc(var(--u) * 1.6);
-    border-top: 1px solid var(--line);
+    border-top: 2px dashed var(--line);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -234,11 +348,56 @@ html, body {
     font-size: 0.78em;
     color: var(--faint);
 }
-.shame strong { color: var(--muted); margin-right: 0.8em; }
+.shame strong { margin-right: 0.8em; padding: 0 0.4em; text-transform: uppercase; letter-spacing: 0.08em; background: var(--line); color: var(--card); }
 .shame span { display: inline-flex; align-items: center; gap: 0.3em; margin-right: 0.9em; white-space: nowrap; }
 .shame .logo { width: 1.2em; height: 1.2em; filter: grayscale(1); opacity: 0.45; }
 
-.empty { color: var(--muted); padding: 0.5em 0; }
+/* empty boards: the hero's place is open and the board shows what's to come */
+
+.hero.placeholder {
+    border-style: dashed;
+    box-shadow: none;
+    background: repeating-linear-gradient(-45deg, var(--accent-soft) 0 0.5em, transparent 0.5em 1em), var(--card);
+}
+.hero.placeholder { color: var(--text); }
+.hero.placeholder .monogram { background: var(--accent); color: var(--ink); font-size: 1.4em; width: 2em; }
+.hero.placeholder .sub { color: var(--muted); }
+
+.contenders strong {
+    display: inline-block;
+    margin-bottom: 0.8em;
+    padding: 0 0.4em;
+    font-size: 0.78em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--line);
+    color: var(--card);
+}
+.contenders ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13em, 1fr));
+    gap: 0.55em 1.2em;
+    font-weight: 600;
+}
+.contenders li { display: flex; align-items: center; gap: 0.5em; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+.contenders .logo { flex: none; }
+
+.ghost {
+    display: grid;
+    grid-template-columns: 1.3em minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.55em 0.2em;
+    border-bottom: 2px dashed var(--dim);
+    opacity: 0.55;
+}
+.ghost:last-child { border-bottom: none; }
+.ghost-line { width: 80%; height: 0.7em; background: var(--dim); }
+.ghost:nth-child(3n + 1) .ghost-line { width: 62%; }
+.ghost:nth-child(3n + 2) .ghost-line { width: 70%; }
+.ghost-money { font-weight: 700; color: var(--muted); }
 
 /* hero: the big card for #1 on each board */
 
@@ -249,13 +408,17 @@ html, body {
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 0.3em 0.9em;
-    /* Room below for the amount sticker hanging over the bottom edge */
+    /* Room below for the stamp hanging over the bottom edge */
     margin-bottom: 0.9em;
     padding: 0.8em 1em;
     border: 3px solid var(--line);
-    border-radius: 12px;
-    background: var(--accent);
+    /* Halftone dots fading in towards the right, behind the stamp */
+    background:
+        linear-gradient(90deg, var(--accent) 35%, transparent 90%),
+        radial-gradient(circle, var(--accent-ink) 0.11em, transparent 0.13em) 0 0 / 0.45em 0.45em,
+        var(--accent);
     box-shadow: 5px 5px 0 var(--line);
+    color: var(--ink);
 }
 
 .hero .flash { background: #ffffff80; }
@@ -263,29 +426,41 @@ html, body {
 .sub .mini { width: 1.15em; height: 1.15em; vertical-align: -0.25em; margin: 0 0.25em; object-fit: contain; }
 
 .hero .name { font-size: 1.8em; line-height: 1.15; }
-.hero .sub { font-size: 0.7em; color: var(--text); }
-.hero .delta { right: 1em; }
+.hero .sub { font-size: 0.7em; color: var(--ink); }
+.hero .delta { right: 1em; color: var(--ink); }
 
-/* The leader's amount is a sticker slapped over the card's bottom-right corner,
-   so the card itself needs no room for it */
+/* The leader's amount is stamped across the card's bottom-right corner:
+   a tilted lime slip with a double frame */
 .hero .money {
     position: absolute;
     right: -0.3em;
-    bottom: -0.75em;
-    padding: 0 0.3em;
+    bottom: -0.8em;
+    padding: 0.05em 0.3em 0;
     font-size: 1.8em;
+    line-height: 1.1;
     background: var(--lime);
-    transform: rotate(-4deg);
+    border: 0.14em double var(--ink);
+    transform: rotate(-5deg);
+}
+/* Remounted on every bump (see HeroCard), slamming the stamp down again */
+.hero .money.slam { animation: slam 0.5s cubic-bezier(0.3, 0.7, 0.4, 1.4); }
+@keyframes slam {
+    from { opacity: 0; transform: rotate(-14deg) scale(1.8); }
+    55% { opacity: 1; }
+    to { transform: rotate(-5deg) scale(1); }
 }
 
 /* donors */
 
+/* The top donor's initials sit in a round seal */
 .monogram {
     display: grid;
     place-items: center;
     width: 2.6em;
     aspect-ratio: 1;
     border: 3px solid var(--line);
+    outline: 2px solid var(--line);
+    outline-offset: -0.35em;
     border-radius: 50%;
     font-size: 1.05em;
     letter-spacing: 0.04em;
@@ -297,19 +472,169 @@ html, body {
     grid-template-columns: 1.3em minmax(0, 1fr) auto;
     align-items: center;
     gap: 0.7em;
-    padding: 0.15em 0.2em;
+    padding: 0.35em 0.2em;
 }
-/* Dividers sit midway in the gap between rows. A pseudo-element rather than a
-   border, so the row's rounded corners (for the flash) don't bend the line. */
-.donors-board ol { gap: 0.6em; }
+/* The rest of the top 10 is a table of nine equal rows filling the board, so
+   it has no empty band at the bottom and every rank keeps its place */
+.donors-board ol {
+    flex: 1;
+    display: grid;
+    grid-template-rows: repeat(9, minmax(min-content, 1fr));
+    gap: 0;
+}
+/* A pseudo-element rather than a border, so the line stays put while the row flashes */
 .donor:not(:last-child)::after {
     content: "";
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -0.3em;
-    border-top: 2px solid var(--line);
-    transform: translateY(50%);
+    bottom: 0;
+    border-top: 2px dashed var(--line);
+}
+
+/* "Ny ledare!" slammed onto the hero card when the lead changes hands, then fading.
+   Remounted per change (see HeroCard), which replays it. It stays up well past the
+   celebration banner, which covers the boards for the first few seconds. */
+.new-leader {
+    position: absolute;
+    z-index: 1;
+    top: -0.9em;
+    left: 4em;
+    padding: 0.1em 0.5em;
+    font-family: var(--display);
+    font-size: 1.1em;
+    text-transform: uppercase;
+    color: var(--lime);
+    background: var(--ink);
+    border: 3px solid var(--lime);
+    box-shadow: 4px 4px 0 var(--line);
+    pointer-events: none;
+    animation: new-leader 10s ease-out forwards;
+}
+@keyframes new-leader {
+    0% { opacity: 0; transform: rotate(-16deg) scale(2); }
+    4% { opacity: 1; transform: rotate(-4deg) scale(0.95); }
+    6%, 92% { opacity: 1; transform: rotate(-6deg) scale(1); }
+    100% { opacity: 0; transform: rotate(-6deg) scale(1); }
+}
+
+/* "▲2" by the rank box of a row that just moved up, fading after a few seconds */
+.climb {
+    position: absolute;
+    z-index: 1;
+    left: 1.1em;
+    top: 50%;
+    padding: 0 0.3em;
+    font-size: 0.65em;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--ink);
+    background: var(--lime);
+    border: 2px solid var(--ink);
+    pointer-events: none;
+    animation: climb 8s ease-out forwards;
+}
+@keyframes climb {
+    0% { opacity: 0; transform: translateY(-20%); }
+    5%, 90% { opacity: 1; transform: translateY(-110%); }
+    100% { opacity: 0; transform: translateY(-110%); }
+}
+
+/* ---------- ticker ---------- */
+
+/* The latest donations scrolling by in a band above the footer */
+.ticker {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    font-size: calc(var(--u) * 2);
+    color: #fff3d6;
+    background: #111;
+    border: 3px solid var(--line);
+}
+.ticker strong {
+    flex: none;
+    display: grid;
+    place-items: center;
+    padding: 0 0.7em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--lime);
+    border-right: 3px solid var(--line);
+}
+.ticker-window { flex: 1; min-width: 0; overflow: hidden; }
+/* Two copies of a lap side by side; sliding one lap's width loops seamlessly */
+.ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker var(--lap-s) linear infinite;
+}
+@keyframes ticker {
+    to { transform: translateX(-50%); }
+}
+.ticker-lap { display: flex; }
+.ticker-item { display: inline-flex; align-items: center; gap: 0.3em; padding: 0.35em 0; white-space: nowrap; }
+/* A sparkle between the items */
+.ticker-item::after { content: "✦"; margin: 0 1.2em; color: var(--dsek); }
+.ticker-item b { color: var(--lime); }
+.ticker-time { margin-right: 0.3em; opacity: 0.6; }
+.ticker .mini { width: 1.2em; height: 1.2em; object-fit: contain; margin: 0 0.1em; }
+
+/* ---------- celebration ---------- */
+
+/* A new donation takes over the middle of the screen for a few seconds */
+.celebration {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    overflow: hidden;
+}
+.celebration-card {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.25em;
+    max-width: 85vw;
+    padding: 0.9em 1.6em 0.8em;
+    font-size: calc(var(--u0) * 3);
+    text-align: center;
+    color: var(--ink);
+    background: var(--lime);
+    border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--ink);
+}
+.celebration-label {
+    padding: 0 0.5em;
+    font-size: 0.6em;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--lime);
+    background: var(--ink);
+}
+.celebration-name { font-family: var(--display); font-size: 2.4em; line-height: 1.05; overflow-wrap: anywhere; }
+.celebration-line { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 0.3em; }
+.celebration .mini { width: 1.3em; height: 1.3em; object-fit: contain; }
+
+/* Confetti bursting out of the card, each piece aimed by its --dx, --dy and --spin */
+.confetti { position: absolute; inset: 50% auto auto 50%; z-index: -1; }
+.confetti i {
+    position: absolute;
+    width: 0.5em;
+    height: 0.8em;
+    border: 2px solid var(--ink);
+    opacity: 0;
+    animation: confetti 1.6s cubic-bezier(0.1, 0.7, 0.3, 1) var(--delay) forwards;
+}
+@keyframes confetti {
+    0% { opacity: 1; transform: translate(-50%, -50%) rotate(0); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 8vh)) rotate(var(--spin)); }
 }
 
 /* ---------- footer ---------- */
@@ -333,8 +658,8 @@ html, body {
     height: 1.6em;
     margin-right: 0.5em;
     border: 2.5px solid var(--line);
-    border-radius: 50%;
     background: var(--lime);
+    color: var(--ink);
     font-size: 0.8em;
 }
 .steps strong { color: var(--text); }
@@ -342,9 +667,9 @@ html, body {
 .status { display: flex; align-items: center; gap: 0.5em; white-space: nowrap; }
 .status::before {
     content: "";
-    width: 0.55em;
-    height: 0.55em;
-    border-radius: 50%;
+    width: 0.6em;
+    height: 0.6em;
+    border: 2px solid var(--line);
     background: var(--ok);
 }
 .status.stale { color: var(--bad); }
@@ -354,17 +679,38 @@ html, body {
 
 /* Single-board views: one panel gets the whole width and a bit more size */
 .leaderboard[data-mode] main { grid-template-columns: minmax(0, 1fr); }
-.leaderboard[data-mode] { --u: calc(min(1.15vh, 1.4vw) * var(--fit)); }
-.leaderboard[data-mode="donors"] main { width: min(100%, calc(var(--u) * 120)); justify-self: center; }
+.leaderboard[data-mode] { --u0: min(1.15vh, 1.4vw); }
+
+/* On wide screens a single board's rows flow into two columns, down the left one
+   first. A long list then fits without --fit shrinking it, so both views come out
+   the same size. CommitteeBoard sets --rows, as its row count varies. */
+@media (min-aspect-ratio: 6001/5000) and (min-width: 801px) {
+    .leaderboard[data-mode] .board ol {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(var(--rows), minmax(min-content, 1fr));
+        column-gap: calc(var(--u) * 5);
+    }
+    /* Committee rows a bit closer, so the list fits without shrinking */
+    .leaderboard[data-mode] .committees-board ol { row-gap: calc(var(--u) * 0.4); }
+    /* The donors' nine ranks: five on the left, four on the right */
+    .leaderboard[data-mode] .donors-board ol { --rows: 5; }
+    /* No divider under the bottom row of the left column */
+    .leaderboard[data-mode] .donor:nth-child(5)::after { display: none; }
+    .leaderboard[data-mode] .ghost:nth-child(5) { border-bottom: none; }
+}
 
 /* Too narrow for two boards side by side: stack them. The 7px floor keeps
    text readable on small screens, which scroll instead of shrinking further. */
 @media (max-aspect-ratio: 6/5), (max-width: 800px) {
+    /* No room for the title's sparkle */
+    .leaderboard h1::after { display: none; }
     .leaderboard main { grid-template-columns: minmax(0, 1fr); }
     .leaderboard,
-    .leaderboard[data-mode] { --u: max(7px, calc(min(1vh, 2.2vw) * var(--fit))); }
+    .leaderboard[data-mode] { --u0: min(1vh, 2.2vw); --u: max(7px, calc(var(--u0) * var(--fit))); }
     /* A single board is sized up here, so the 3u gaps around it would be oversized */
-    .leaderboard[data-mode] { gap: calc(var(--u) * 1.5); }
+    .leaderboard[data-mode] { gap: calc(var(--u0) * 1.5); }
     /* The board's 8px shadow fills part of the gap below it; pull the board up
        by as much so the gaps above and below it look the same */
     .leaderboard[data-mode] header { margin-bottom: -8px; }
@@ -380,10 +726,10 @@ html, body {
    room: amounts move below the names. */
 @media (max-width: 600px) {
     .leaderboard,
-    .leaderboard[data-mode] { --u: max(8px, 2.2vw); }
+    .leaderboard[data-mode] { --u0: max(8px, 2.2vw); --u: var(--u0); }
     .leaderboard { padding-inline: 16px; }
     /* Too narrow for one row: the total goes under the title */
-    .leaderboard header { flex-wrap: wrap; }
+    .leaderboard header { flex-wrap: wrap; row-gap: calc(var(--u) * 3); }
     .total { text-align: left; }
     .leaderboard h1 { font-size: calc(var(--u) * 5); }
     .total .amount { font-size: calc(var(--u) * 7); }
@@ -410,4 +756,6 @@ html, body {
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
+    /* These only disappear by animating out, so without motion they would stay */
+    .flash, .delta, .new-leader, .climb, .confetti { display: none; }
 }

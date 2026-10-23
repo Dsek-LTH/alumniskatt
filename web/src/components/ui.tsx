@@ -1,6 +1,6 @@
 import type { Donor } from "../../../server/types.ts";
 import { kr } from "../lib/format.ts";
-import type { Bump } from "../lib/hooks.ts";
+import type { Bump, Climb } from "../lib/hooks.ts";
 
 // Logo paths come from our own API ("logos/kallarmasteriet.svg"), never from the till.
 export function Logo({ src, className = "logo" }: { src: string; className?: string }) {
@@ -9,6 +9,16 @@ export function Logo({ src, className = "logo" }: { src: string; className?: str
 
 export function Rank({ n }: { n: number }) {
     return <span className="rank">{n}</span>;
+}
+
+/** "▲2" on a row that just moved up two places. Keyed by the climb id, so it replays. */
+export function ClimbBadge({ climb }: { climb: Climb | null }) {
+    if (!climb) return null;
+    return (
+        <span key={climb.id} className="climb">
+            ▲{climb.by}
+        </span>
+    );
 }
 
 /** "9 st - mest till <logo> Sexmästeriet" */

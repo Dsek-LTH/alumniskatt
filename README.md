@@ -29,9 +29,16 @@ cp .env.example .env   # fill in the Zettle credentials and EVENT_START
 ## Views
 
 - `/` shows both boards, `/committees` and `/donors` show one each.
-- `/demo`, `/demo/committees` and `/demo/donors` show the same views on fake data, with a
-  donation every few seconds, for checking how the board looks on the real screens.
-  It starts over once the board is full, and the footer says "Demo" instead of "Live".
+- `/rotate` switches between the two boards every 20 seconds, for screens too small
+  for both. `?interval=30` changes how often.
+- `/demo`, `/demo/committees`, `/demo/donors` and `/demo/rotate` show the same views on
+  fake data, with a donation every few seconds, for checking how the board looks on the
+  real screens. It starts over once the board is full, and the footer says "Demo" instead of "Live".
+- Every view is dark in the evening (18–06) and light otherwise. `?theme=dark` or
+  `?theme=light` fixes the theme.
+
+Each new donation is shown in a banner across the screen for a few seconds, and the
+latest ones scroll by in the *Senaste* band above the footer.
 
 In Asta, add a `WEBSITE` item pointing at e.g. `http://<server>:3000/`.
 

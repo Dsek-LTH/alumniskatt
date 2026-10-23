@@ -66,3 +66,18 @@ test("rows for a variant no longer on the product still count, under their own n
     expect(board.committees[0]).toMatchObject({ name: "Skatt", total: 1000 });
     expect(board.committees).toHaveLength(4);
 });
+
+test("recent donations are the newest first, with ids that stay the same between syncs", () => {
+    const rows = Array.from({ length: 10 }, (_, i) => row(i % 2 ? "km" : "sexm", i === 9 ? "" : `Donor ${i}`, 1500, i));
+    const { recent } = computeLeaderboard(variants, rows);
+    expect(recent).toHaveLength(8);
+    expect(recent[0]).toMatchObject({ name: "", committee: "Källarmästeriet", amount: 1500, timestamp: "2026-10-24T19:09:00.000Z" });
+    expect(recent[0]!.logo).toBe("logos/kallarmasteriet.svg");
+    expect(recent.at(-1)!.name).toBe("Donor 2");
+    expect(computeLeaderboard(variants, rows).recent.map((d) => d.id)).toEqual(recent.map((d) => d.id));
+});
+
+test("identical rows get different ids", () => {
+    const { recent } = computeLeaderboard(variants, [row("km", "A", 1500), row("km", "A", 1500)]);
+    expect(new Set(recent.map((d) => d.id)).size).toBe(2);
+});

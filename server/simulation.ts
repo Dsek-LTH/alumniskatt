@@ -97,12 +97,13 @@ export function simulateActivity(sim: Simulation, opts = { minS: 3, maxS: 8, res
     next();
 }
 
-/** /demo, /demo/committees and /demo/donors: the board on the simulation's data */
+/** /demo, /demo/committees, /demo/donors and /demo/rotate: the board on the simulation's data */
 export function demoRoutes(sim: Simulation) {
     return {
         "/demo": servePage,
         "/demo/committees": servePage,
         "/demo/donors": servePage,
+        "/demo/rotate": servePage,
         "/demo/api/leaderboard": () => Response.json(sim.store.leaderboard()),
     };
 }

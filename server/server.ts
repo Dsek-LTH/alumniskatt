@@ -23,6 +23,8 @@ export function startServer(store: Store, opts: { port: number; pollIntervalS: n
             "/": servePage,
             "/committees": servePage,
             "/donors": servePage,
+            // Switches between the two boards, for screens too small for both
+            "/rotate": servePage,
             "/api/leaderboard": () => Response.json(store.leaderboard()),
             "/health": () => {
                 const { updatedAt, lastError } = store.leaderboard();

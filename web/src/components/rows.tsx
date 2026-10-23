@@ -2,8 +2,8 @@ import { motion } from "motion/react";
 import type { Ref } from "react";
 import type { Committee, Donor } from "../../../server/types.ts";
 import { kr } from "../lib/format.ts";
-import { useBump } from "../lib/hooks.ts";
-import { BumpEffects, FavouriteLine, Logo, Rank } from "./ui.tsx";
+import { useBump, useClimb } from "../lib/hooks.ts";
+import { BumpEffects, ClimbBadge, FavouriteLine, Logo, Rank } from "./ui.tsx";
 
 // Rows slide to their new rank and fade in and out of the list. The ref is passed
 // on so AnimatePresence's popLayout mode can lift a leaving row out of the layout.
@@ -19,10 +19,12 @@ type CommitteeRowProps = { committee: Committee; rank: number; max: number; ref?
 
 export function CommitteeRow({ committee, rank, max, ref }: CommitteeRowProps) {
     const bump = useBump(committee.total);
+    const climb = useClimb(rank);
 
     return (
         <motion.li ref={ref} {...rowMotion} className={rank <= 3 ? "committee podium" : "committee"}>
             <BumpEffects bump={bump} />
+            <ClimbBadge climb={climb} />
             <Rank n={rank} />
             <Logo src={committee.logo} />
             <span className="name">{committee.name}</span>
@@ -36,10 +38,12 @@ export function CommitteeRow({ committee, rank, max, ref }: CommitteeRowProps) {
 
 export function DonorRow({ donor, rank, ref }: { donor: Donor; rank: number; ref?: Ref<HTMLLIElement> }) {
     const bump = useBump(donor.total);
+    const climb = useClimb(rank);
 
     return (
         <motion.li ref={ref} {...rowMotion} className={rank <= 3 ? "donor podium" : "donor"}>
             <BumpEffects bump={bump} />
+            <ClimbBadge climb={climb} />
             <Rank n={rank} />
             <span className="name">
                 {donor.name}

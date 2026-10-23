@@ -2,7 +2,7 @@
 // the poller refetches the whole event window every minute and replaces everything here.
 
 import { logoFor } from "./logos.ts";
-import type { Committee, Donor, Leaderboard } from "./types.ts";
+import type { Committee, Donation, Donor, Leaderboard } from "./types.ts";
 
 /** One alumniskatt row from a purchase */
 export type Row = {
@@ -17,6 +17,30 @@ export type Row = {
 export type CommitteeVariant = { uuid: string; name: string };
 
 const TOP_DONORS = 10;
+const RECENT_DONATIONS = 8;
+
+/** Zettle's "2026-10-24T19:00:00.000+0000" → "2026-10-24T19:00:00.000Z", which every browser parses */
+export function isoTimestamp(timestamp: string): string {
+    const date = new Date(timestamp.replace(/([+-]\d{2})(\d{2})$/, "$1:$2"));
+    return Number.isNaN(date.getTime()) ? timestamp : date.toISOString();
+}
+
+/**
+ * The newest rows as donations. Ids are built from the row itself, since Zettle refetches
+ * give no row ids, plus a counter for identical rows, so they stay the same between syncs.
+ */
+export function recentDonations(rows: Row[], committeeName: (row: Row) => string): Donation[] {
+    const seen = new Map<string, number>();
+    const donations = rows.map((row) => {
+        const timestamp = isoTimestamp(row.timestamp);
+        const key = `${timestamp}|${row.variantUuid}|${row.purchaserKey}|${row.amount}`;
+        const n = seen.get(key) ?? 0;
+        seen.set(key, n + 1);
+        const committee = committeeName(row);
+        return { id: `${key}|${n}`, name: row.purchaserRaw, committee, logo: logoFor(committee), amount: row.amount, timestamp };
+    });
+    return donations.sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, RECENT_DONATIONS);
+}
 
 /** Swedish alphabetical order, so Å, Ä and Ö come last */
 export const bySwedishName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name, "sv");
@@ -81,6 +105,7 @@ export function computeLeaderboard(
         donations: rows.length,
         committees: committeeList,
         donors: donorList,
+        recent: recentDonations(rows, (row) => committees.get(row.variantUuid)!.name),
     };
 }
 

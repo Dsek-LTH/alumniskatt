@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
-import type { Leaderboard } from "../../../server/types.ts";
+import type { Donation, Leaderboard } from "../../../server/types.ts";
 
 /** Polls the leaderboard API at `url`. Returns null until the first response. */
 export function useLeaderboard(url: string, refreshMs: number): Leaderboard | null {
@@ -47,6 +47,70 @@ export function useBump(total: number, identity = ""): Bump | null {
     }, [total, identity]);
 
     return bump;
+}
+
+/**
+ * Counts how often `value` has changed since the first render, e.g. a new leader.
+ * Used as a React key to replay an animation on every change.
+ */
+export function useChangeCount(value: string): number {
+    const previous = useRef(value);
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+        if (previous.current !== value) setCount((c) => c + 1);
+        previous.current = value;
+    }, [value]);
+    return count;
+}
+
+export type Climb = { id: number; by: number };
+
+/** Reports when a row moves up the list, and by how many places */
+export function useClimb(rank: number): Climb | null {
+    const previous = useRef(rank);
+    const [climb, setClimb] = useState<Climb | null>(null);
+    useEffect(() => {
+        if (rank < previous.current) {
+            const by = previous.current - rank;
+            setClimb((c) => ({ id: (c?.id ?? 0) + 1, by }));
+        }
+        previous.current = rank;
+    }, [rank]);
+    return climb;
+}
+
+// How long each celebration is on screen, and how many can wait their turn.
+// Zettle is polled every minute, so a few donations often arrive at once.
+const CELEBRATION_MS = 4500;
+const MAX_QUEUED = 4;
+
+/**
+ * The donation to celebrate right now, if any. Donations already there when the
+ * page loads are not celebrated; new ones are shown one at a time, oldest first.
+ */
+export function useCelebration(recent: Donation[] | undefined): Donation | null {
+    const seen = useRef<Set<string> | null>(null);
+    const [queue, setQueue] = useState<Donation[]>([]);
+
+    useEffect(() => {
+        if (!recent) return;
+        if (!seen.current) {
+            seen.current = new Set(recent.map((d) => d.id));
+            return;
+        }
+        const fresh = recent.filter((d) => !seen.current!.has(d.id)).reverse();
+        for (const d of fresh) seen.current.add(d.id);
+        if (fresh.length > 0) setQueue((q) => [...q, ...fresh].slice(-MAX_QUEUED));
+    }, [recent]);
+
+    const current = queue[0] ?? null;
+    useEffect(() => {
+        if (!current) return;
+        const timer = setTimeout(() => setQueue((q) => q.slice(1)), CELEBRATION_MS);
+        return () => clearTimeout(timer);
+    }, [current]);
+
+    return current;
 }
 
 /** The current time, updated every `intervalMs`. */

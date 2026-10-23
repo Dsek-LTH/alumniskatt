@@ -1,6 +1,8 @@
 import { AnimatePresence } from "motion/react";
+import type { CSSProperties } from "react";
 import type { Committee } from "../../../server/types.ts";
-import { plural } from "../lib/format.ts";
+import { plural, sharedRanks } from "../lib/format.ts";
+import { Contenders, EmptyHero } from "./empty.tsx";
 import { HeroCard } from "./HeroCard.tsx";
 import { CommitteeRow } from "./rows.tsx";
 import { Logo } from "./ui.tsx";
@@ -12,6 +14,7 @@ export function CommitteeBoard({ committees }: { committees: Committee[] }) {
     const [leader, ...rest] = active;
     // Bars are drawn relative to the leader
     const max = Math.max(1, leader?.total ?? 1);
+    const ranks = sharedRanks(active.map((c) => c.total));
 
     return (
         <section className="board committees-board">
@@ -25,15 +28,19 @@ export function CommitteeBoard({ committees }: { committees: Committee[] }) {
                     sub={<span className="sub">{plural(leader.donations, "inbetalning", "inbetalningar")}</span>}
                 />
             ) : (
-                <p className="empty">Vilket utskott tar ledningen?</p>
+                <>
+                    <EmptyHero title="Vem tar ledningen?" sub="Första alumniskatten avgör" />
+                    <Contenders committees={committees} />
+                </>
             )}
 
-            <ol>
+            {/* Rows per column when the single-board view splits the list in two */}
+            <ol style={{ "--rows": Math.max(1, Math.ceil(rest.length / 2)) } as CSSProperties}>
                 {/* popLayout: a leaving row stops taking up space at once, so the list
                     never grows taller for a moment and the page doesn't shrink to fit */}
                 <AnimatePresence initial={false} mode="popLayout">
                     {rest.map((c, i) => (
-                        <CommitteeRow key={c.name} committee={c} rank={i + 2} max={max} />
+                        <CommitteeRow key={c.name} committee={c} rank={ranks[i + 1]!} max={max} />
                     ))}
                 </AnimatePresence>
             </ol>
