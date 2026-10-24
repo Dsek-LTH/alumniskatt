@@ -56,7 +56,10 @@ export function zettleWebhook(opts: { signingKey?: string; productUuid: string; 
             return new Response("Bad signature", { status: 401 });
         }
 
-        if (hasProduct(payload, opts.productUuid)) opts.onPurchase();
+        if (hasProduct(payload, opts.productUuid)) {
+            console.log("[webhook] alumniskatt purchase → syncing");
+            opts.onPurchase();
+        }
         return new Response("OK");
     };
 }
