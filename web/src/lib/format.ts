@@ -3,6 +3,12 @@ export const kr = (ore: number) => `${Math.round(ore / 100).toLocaleString("sv-S
 
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
+/** ["A"] → "A", ["A", "B", "C"] → "A, B och C", ["A", "B", "C", "D"] → "A, B och 2 till" */
+export function nameList(names: string[], shown = 2): string {
+    if (names.length > shown + 1) return `${names.slice(0, shown).join(", ")} och ${names.length - shown} till`;
+    return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} och ${names.at(-1)}`;
+}
+
 /** "2026-10-24T19:43:00.000Z" → "21:43", in the screen's time zone */
 export const clock = (timestamp: string) =>
     new Date(timestamp).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });

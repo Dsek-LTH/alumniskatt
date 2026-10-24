@@ -114,6 +114,8 @@ export function createStore() {
     let rows: Row[] = [];
     let updatedAt: string | null = null;
     let lastError: string | null = null;
+    const listeners = new Set<() => void>();
+    const notify = () => listeners.forEach((listener) => listener());
 
     return {
         /** A fresh snapshot from Zettle replaces everything */
@@ -122,10 +124,18 @@ export function createStore() {
             rows = nextRows;
             updatedAt = new Date().toISOString();
             lastError = null;
+            notify();
         },
 
         markError(message: string) {
             lastError = message;
+            notify();
+        },
+
+        /** Calls `listener` after every change. Returns a function that unsubscribes. */
+        subscribe(listener: () => void) {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
         },
 
         leaderboard(): Leaderboard {

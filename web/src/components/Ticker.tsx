@@ -30,7 +30,8 @@ export function Ticker({ recent }: { recent: Donation[] }) {
     // One lap is the items repeated until it is long enough. The track holds two laps
     // and slides one lap's width, so the loop is seamless.
     const lap = Array.from({ length: Math.ceil(MIN_ITEMS / items.length) }, () => items).flat();
-    const style = { "--lap-s": `${lap.length * 5}s` } as CSSProperties;
+    // About 8 s per item, slow enough to read without pulling the eye from the boards
+    const style = { "--lap-s": `${lap.length * 8}s` } as CSSProperties;
 
     return (
         <div className="ticker">

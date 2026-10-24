@@ -13,7 +13,8 @@ export type Mode = "both" | "committees" | "donors";
 type Props = { mode: Mode; demo: boolean; refreshMs: number };
 
 export function Leaderboard({ mode, demo, refreshMs }: Props) {
-    const data = useLeaderboard(demo ? "/demo/api/leaderboard" : "/api/leaderboard", refreshMs);
+    const api = demo ? "/demo/api" : "/api";
+    const data = useLeaderboard(`${api}/leaderboard`, `${api}/events`, refreshMs);
     const celebrating = useCelebration(data?.recent);
     const ref = useRef<HTMLDivElement>(null);
     useFitToScreen(ref, [data, mode]);

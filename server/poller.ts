@@ -41,6 +41,11 @@ export async function syncOnce(
     return rows.length;
 }
 
+/**
+ * Syncs every `intervalS` seconds. `syncNow` syncs at once, e.g. when Zettle's webhook
+ * reports a purchase. Calls during a sync are coalesced into one more sync after it,
+ * so a burst of purchases costs at most two fetches and none is missed.
+ */
 export function startPoller(
     store: Store,
     zettle: ZettleClient,
@@ -56,6 +61,25 @@ export function startPoller(
             store.markError(message);
         }
     };
-    run();
-    return setInterval(run, opts.intervalS * 1000);
+
+    let running: Promise<void> | null = null;
+    let again = false;
+    const syncNow = (): Promise<void> => {
+        if (running) {
+            again = true;
+            return running;
+        }
+        running = (async () => {
+            do {
+                again = false;
+                await run();
+            } while (again);
+            running = null;
+        })();
+        return running;
+    };
+
+    syncNow();
+    const timer = setInterval(syncNow, opts.intervalS * 1000);
+    return { syncNow, timer };
 }

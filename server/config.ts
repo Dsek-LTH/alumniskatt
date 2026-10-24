@@ -21,5 +21,8 @@ export const config = {
     eventStart: () => process.env.EVENT_START || startOfToday(),
     eventEnd: process.env.EVENT_END || undefined,
     pollIntervalS: Number(process.env.POLL_INTERVAL_S || 60),
+    // From `bun run webhook subscribe`. Without it, webhook purchases are ignored and
+    // the board only updates on the poll.
+    zettleWebhookSigningKey: process.env.ZETTLE_WEBHOOK_SIGNING_KEY || undefined,
     port: Number(process.env.PORT || 3000),
 };

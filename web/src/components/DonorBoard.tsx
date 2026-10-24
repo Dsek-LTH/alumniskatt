@@ -23,6 +23,7 @@ export function DonorBoard({ donors }: { donors: Donor[] }) {
                     total={top.total}
                     media={<Monogram name={top.name} />}
                     sub={<FavouriteLine donor={top} />}
+                    tiedWith={rest.filter((d) => d.total === top.total).map((d) => d.name)}
                 />
             ) : (
                 <EmptyHero title="Din plats?" sub="Köp en alumniskatt och hamna här" />

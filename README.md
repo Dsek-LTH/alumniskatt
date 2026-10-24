@@ -4,9 +4,10 @@ Live leaderboard for the alumni pub. Alumni add an *alumniskatt* to their order 
 pick a committee as the product variant and give their name as the row comment. The board
 shows which committee has collected the most and who has donated the most.
 
-A Bun server fetches the evening's sales from Zettle every minute, sums them in memory
-and serves a React page meant for the Asta screens. Nothing is stored; Zettle is the
-source of truth, so a restart just refetches.
+A Bun server fetches the evening's sales from Zettle every minute, and at once when
+Zettle's webhook reports a purchase. It sums them in memory and serves a React page meant
+for the Asta screens, pushing every change to them as it happens. Nothing is stored;
+Zettle is the source of truth, so a restart just refetches.
 
 ## Setup
 
@@ -25,6 +26,20 @@ cp .env.example .env   # fill in the Zettle credentials and EVENT_START
 | `docker compose up -d --build` | Production in Docker |
 | `bun test` / `bun run typecheck` | Tests and type checks |
 | `bun run inspect` | Prints recent Zettle purchases, to check comments and variants |
+| `bun run webhook list` | Lists the Zettle webhooks (see below) |
+
+## Live updates
+
+Without a webhook a donation shows up on the next poll, up to a minute later. With one,
+Zettle tells the server about each purchase and the board updates within seconds:
+
+1. With the server running at its public address, subscribe from your machine:
+   `bun run webhook subscribe https://alumniskatt.dsek.se/api/zettle/webhook <your email>`
+   (Zettle emails that address if deliveries fail)
+2. Set the printed `ZETTLE_WEBHOOK_SIGNING_KEY` on the server and restart it.
+
+`bun run webhook list` and `bun run webhook delete <uuid>` manage the subscription.
+The poll keeps running, so a missed webhook only delays a donation until the next one.
 
 ## Views
 

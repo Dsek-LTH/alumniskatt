@@ -4,6 +4,7 @@
 const TOKEN_URL = "https://oauth.zettle.com/token";
 const PURCHASES_URL = "https://purchase.izettle.com/purchases/v2";
 const PRODUCTS_URL = "https://products.izettle.com/organizations/self/products";
+const SUBSCRIPTIONS_URL = "https://pusher.izettle.com/organizations/self/subscriptions";
 const PAGE_SIZE = 1000;
 
 export type ZettleLibraryProduct = {
@@ -28,6 +29,18 @@ export type ZettlePurchase = {
     amount: number;
     products: ZettleProduct[];
     [key: string]: unknown;
+};
+
+/** A Pusher API subscription: Zettle POSTs the named events to `destination` */
+export type ZettleSubscription = {
+    uuid: string;
+    transportName: string;
+    eventNames: string[];
+    destination: string;
+    contactEmail: string;
+    status?: string;
+    /** Only in the response to creating it; signs every message (X-iZettle-Signature) */
+    signingKey?: string;
 };
 
 type PurchasesPage = {
@@ -112,6 +125,32 @@ export class ZettleClient {
             throw new Error(`Zettle product failed: ${res.status} ${await res.text()}`);
         }
         return (await res.json()) as ZettleLibraryProduct;
+    }
+
+    /** Pusher API subscriptions (webhooks) for this organisation */
+    async subscriptions(): Promise<ZettleSubscription[]> {
+        return (await this.pusher("GET", SUBSCRIPTIONS_URL)) as ZettleSubscription[];
+    }
+
+    async createSubscription(subscription: Omit<ZettleSubscription, "status" | "signingKey">): Promise<ZettleSubscription> {
+        return (await this.pusher("POST", SUBSCRIPTIONS_URL, subscription)) as ZettleSubscription;
+    }
+
+    async deleteSubscription(uuid: string): Promise<void> {
+        await this.pusher("DELETE", `${SUBSCRIPTIONS_URL}/${uuid}`);
+    }
+
+    private async pusher(method: string, url: string, body?: unknown): Promise<unknown> {
+        const res = await fetch(url, {
+            method,
+            headers: { Authorization: `Bearer ${await this.accessToken()}`, "Content-Type": "application/json" },
+            body: body === undefined ? undefined : JSON.stringify(body),
+        });
+        if (!res.ok) {
+            throw new Error(`Zettle pusher ${method} failed: ${res.status} ${await res.text()}`);
+        }
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
     }
 }
 

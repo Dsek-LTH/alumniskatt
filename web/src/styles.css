@@ -22,6 +22,9 @@
     --ink: #111;
     /* Faint marks on the boards: dot grid, bar ticks, placeholder rows */
     --dim: #11111126;
+    /* Black bands and labels: board headings, Skamvrån, the ticker's label */
+    --band: #111;
+    --band-text: #fff;
     --ok: #1f9d55;
     --bad: #d64545;
 
@@ -30,16 +33,27 @@
     --sans: "Space Grotesk", system-ui, sans-serif;
 }
 
-/* Dark theme for the pub in the evening (see useTheme in App.tsx): dark boards with
-   cream outlines and shadows, while the pink, purple and lime fills stay as they are */
+/* Dark theme for the pub in the evening (see useTheme in App.tsx): dark boards and
+   headings, with outlines and shadows in colour instead of black: each board in its
+   own colour (pink or purple) and lime outside them. The leader cards get a double
+   frame, black inside lime, so the lime never touches their pink and purple. */
+:root[data-theme="dark"] .board { --line: var(--accent); --hatch: var(--accent); }
+:root[data-theme="dark"] .hero { border-color: #000; box-shadow: 0 0 0 3px var(--lime), 6px 6px 0 3px #000; }
+/* Lime fills keep a dark frame, so lime is never drawn on lime */
+:root[data-theme="dark"] .total { border-color: var(--ink); box-shadow: 5px 5px 0 var(--dsek); }
+:root[data-theme="dark"] .monogram { border-color: var(--ink); outline-color: var(--ink); }
+:root[data-theme="dark"] .steps b { border-color: var(--ink); }
+
 :root[data-theme="dark"] {
-    --bg: #17141c;
-    --card: #221e29;
-    --line: #f4e9cf;
-    --text: #f4e9cf;
-    --muted: #c4bba9;
-    --faint: #8e877b;
-    --dim: #f4e9cf24;
+    --bg: #141217;
+    --card: #1f1c24;
+    --line: var(--lime);
+    --text: #f3f1f7;
+    --muted: #b8b3c2;
+    --faint: #857f90;
+    --dim: #ffffff1f;
+    --band: #0b0a0e;
+    --band-text: #f3f1f7;
     --dsek-ink: #ff8fc1;
     --infocom-ink: #b9a3ff;
     color-scheme: dark;
@@ -219,7 +233,7 @@ html, body {
 .board::before {
     inset: -3px;
     transform: translate(8px, 8px);
-    background: repeating-linear-gradient(-45deg, var(--line) 0 2px, transparent 2px 5px);
+    background: repeating-linear-gradient(-45deg, var(--hatch, var(--line)) 0 2px, transparent 2px 5px);
 }
 .board::after {
     inset: 0;
@@ -241,8 +255,8 @@ html, body {
     /* Stripes in the board's colour run out the band's right end */
     background:
         repeating-linear-gradient(-45deg, var(--accent) 0 0.22em, transparent 0.22em 0.5em) right / 14% 100% no-repeat,
-        var(--line);
-    color: var(--card);
+        var(--band);
+    color: var(--band-text);
 }
 .board h2::before {
     content: counter(section);
@@ -348,7 +362,7 @@ html, body {
     font-size: 0.78em;
     color: var(--faint);
 }
-.shame strong { margin-right: 0.8em; padding: 0 0.4em; text-transform: uppercase; letter-spacing: 0.08em; background: var(--line); color: var(--card); }
+.shame strong { margin-right: 0.8em; padding: 0 0.4em; text-transform: uppercase; letter-spacing: 0.08em; background: var(--band); color: var(--band-text); }
 .shame span { display: inline-flex; align-items: center; gap: 0.3em; margin-right: 0.9em; white-space: nowrap; }
 .shame .logo { width: 1.2em; height: 1.2em; filter: grayscale(1); opacity: 0.45; }
 
@@ -370,8 +384,8 @@ html, body {
     font-size: 0.78em;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    background: var(--line);
-    color: var(--card);
+    background: var(--band);
+    color: var(--band-text);
 }
 .contenders ul {
     list-style: none;
@@ -492,14 +506,27 @@ html, body {
     border-top: 2px dashed var(--line);
 }
 
+/* "Delad etta med Fnatte" under the leader's name when others have the same total.
+   Their rows below keep rank 1, which this explains. */
+.hero .tie {
+    display: inline-block;
+    margin-top: 0.35em;
+    padding: 0.05em 0.45em;
+    font-size: 0.62em;
+    font-weight: 700;
+    color: #fff;
+    background: var(--ink);
+}
+
 /* "Ny ledare!" slammed onto the hero card when the lead changes hands, then fading.
    Remounted per change (see HeroCard), which replays it. It stays up well past the
    celebration banner, which covers the boards for the first few seconds. */
 .new-leader {
     position: absolute;
     z-index: 1;
+    /* Top right, clear of the name and of the amount stamp at the bottom right */
     top: -0.9em;
-    left: 4em;
+    right: 1.5em;
     padding: 0.1em 0.5em;
     font-family: var(--display);
     font-size: 1.1em;
@@ -543,26 +570,27 @@ html, body {
 
 /* ---------- ticker ---------- */
 
-/* The latest donations scrolling by in a band above the footer */
+/* The latest donations scrolling slowly by in a quiet strip above the footer,
+   on the boards' paper so it doesn't compete with them */
 .ticker {
     display: flex;
     align-items: stretch;
     min-width: 0;
-    font-size: calc(var(--u) * 2);
-    color: #fff3d6;
-    background: #111;
-    border: 3px solid var(--line);
+    font-size: calc(var(--u) * 1.9);
+    color: var(--muted);
+    background: var(--card);
+    border: 2px solid var(--line);
 }
 .ticker strong {
     flex: none;
     display: grid;
     place-items: center;
     padding: 0 0.7em;
+    font-size: 0.85em;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--ink);
-    background: var(--lime);
-    border-right: 3px solid var(--line);
+    color: var(--band-text);
+    background: var(--band);
 }
 .ticker-window { flex: 1; min-width: 0; overflow: hidden; }
 /* Two copies of a lap side by side; sliding one lap's width loops seamlessly */
@@ -577,9 +605,20 @@ html, body {
 .ticker-lap { display: flex; }
 .ticker-item { display: inline-flex; align-items: center; gap: 0.3em; padding: 0.35em 0; white-space: nowrap; }
 /* A sparkle between the items */
-.ticker-item::after { content: "✦"; margin: 0 1.2em; color: var(--dsek); }
-.ticker-item b { color: var(--lime); }
-.ticker-time { margin-right: 0.3em; opacity: 0.6; }
+/* The background's confetti shapes between the items, taking turns */
+.ticker-item::after {
+    content: "";
+    flex: none;
+    width: 0.85em;
+    height: 0.85em;
+    margin: 0 1.1em;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg stroke='%23111' stroke-width='3' stroke-linejoin='round'%3E%3Cpath d='M20 3 24 16 37 20 24 24 20 37 16 24 3 20 16 16Z' fill='%23ff6fae'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+.ticker-lap > :nth-child(4n + 2) .ticker-item::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg stroke='%23111' stroke-width='3' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='20' r='11' fill='%23b8f35b'/%3E%3C/g%3E%3C/svg%3E"); }
+.ticker-lap > :nth-child(4n + 3) .ticker-item::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg stroke='%23111' stroke-width='3' stroke-linejoin='round'%3E%3Cpath d='M20 7 33 31H7Z' fill='%239b7bff'/%3E%3C/g%3E%3C/svg%3E"); }
+.ticker-lap > :nth-child(4n + 4) .ticker-item::after { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg stroke='%23111' stroke-width='3' stroke-linejoin='round'%3E%3Cpath d='M15 6h10v9h9v10h-9v9H15v-9H6V15h9Z' fill='%23b8f35b'/%3E%3C/g%3E%3C/svg%3E"); }
+.ticker-item b { color: var(--text); }
+.ticker-time { margin-right: 0.3em; color: var(--faint); }
 .ticker .mini { width: 1.2em; height: 1.2em; object-fit: contain; margin: 0 0.1em; }
 
 /* ---------- celebration ---------- */

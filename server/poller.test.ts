@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
-import { extractRows } from "./poller.ts";
-import type { ZettlePurchase } from "./zettle.ts";
+import { extractRows, startPoller } from "./poller.ts";
+import { createStore } from "./store.ts";
+import type { ZettleClient, ZettlePurchase } from "./zettle.ts";
 
 const PRODUCT = "alumniskatt-uuid";
 
@@ -36,4 +37,30 @@ test("discounts are deducted", () => {
 test("rows without a comment get an empty purchaser", () => {
     const [row] = extractRows([purchase("p1", [{ productUuid: PRODUCT, quantity: "1", unitPrice: 1500 }])], PRODUCT);
     expect(row.purchaserKey).toBe("");
+});
+
+test("syncs requested during a sync are coalesced into one more", async () => {
+    let fetches = 0;
+    let release = () => {};
+    const zettle = {
+        product: async () => ({ variants: [] }),
+        allPurchases: async () => {
+            fetches++;
+            await new Promise<void>((resolve) => (release = resolve));
+            return [];
+        },
+    } as unknown as ZettleClient;
+    const poller = startPoller(createStore(), zettle, { productUuid: PRODUCT, eventStart: () => "2026-10-24", intervalS: 3600 });
+    clearInterval(poller.timer);
+
+    // The first sync is running; three webhook calls arrive meanwhile
+    await Bun.sleep(0);
+    poller.syncNow();
+    poller.syncNow();
+    const done = poller.syncNow();
+    release();
+    await Bun.sleep(0);
+    release();
+    await done;
+    expect(fetches).toBe(2);
 });

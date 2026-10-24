@@ -26,6 +26,7 @@ export function CommitteeBoard({ committees }: { committees: Committee[] }) {
                     total={leader.total}
                     media={<Logo src={leader.logo} />}
                     sub={<span className="sub">{plural(leader.donations, "inbetalning", "inbetalningar")}</span>}
+                    tiedWith={rest.filter((c) => c.total === leader.total).map((c) => c.name)}
                 />
             ) : (
                 <>

@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { Donation, Leaderboard } from "../../../server/types.ts";
 
-/** Polls the leaderboard API at `url`. Returns null until the first response. */
-export function useLeaderboard(url: string, refreshMs: number): Leaderboard | null {
+/**
+ * The leaderboard, pushed by the server at `eventsUrl` the moment it changes. Polling
+ * `url` every `refreshMs` is the fallback, while the event stream reconnects.
+ * Returns null until the first response.
+ */
+export function useLeaderboard(url: string, eventsUrl: string, refreshMs: number): Leaderboard | null {
     const [data, setData] = useState<Leaderboard | null>(null);
 
     useEffect(() => {
@@ -22,6 +26,13 @@ export function useLeaderboard(url: string, refreshMs: number): Leaderboard | nu
             clearInterval(timer);
         };
     }, [url, refreshMs]);
+
+    useEffect(() => {
+        // EventSource reconnects by itself if the connection drops
+        const events = new EventSource(eventsUrl);
+        events.onmessage = (e) => setData(JSON.parse(e.data));
+        return () => events.close();
+    }, [eventsUrl]);
 
     return data;
 }

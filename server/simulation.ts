@@ -2,6 +2,7 @@
 // demo server (bun run demo) and by /demo on the real server, which shows the board
 // on simulated activity so it can be checked on the actual screens.
 
+import { leaderboardEvents } from "./events.ts";
 import { purchaserKey } from "./poller.ts";
 import { servePage } from "./server.ts";
 import { createStore, type Row } from "./store.ts";
@@ -105,5 +106,6 @@ export function demoRoutes(sim: Simulation) {
         "/demo/donors": servePage,
         "/demo/rotate": servePage,
         "/demo/api/leaderboard": () => Response.json(sim.store.leaderboard()),
+        "/demo/api/events": () => leaderboardEvents(sim.store),
     };
 }

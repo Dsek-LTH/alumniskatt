@@ -1,3 +1,4 @@
+import { leaderboardEvents } from "./events.ts";
 import type { Store } from "./store.ts";
 
 type Routes = Parameters<typeof Bun.serve>[0]["routes"];
@@ -26,6 +27,7 @@ export function startServer(store: Store, opts: { port: number; pollIntervalS: n
             // Switches between the two boards, for screens too small for both
             "/rotate": servePage,
             "/api/leaderboard": () => Response.json(store.leaderboard()),
+            "/api/events": () => leaderboardEvents(store),
             "/health": () => {
                 const { updatedAt, lastError } = store.leaderboard();
                 const ageS = updatedAt ? (Date.now() - Date.parse(updatedAt)) / 1000 : Infinity;
