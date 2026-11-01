@@ -71,10 +71,9 @@ export function zettleWebhook(opts: { signingKey?: string; productUuid: string; 
 
         // Sent once when the subscription is created, before the signing key is configured
         if (message.eventName === "TestMessage") return new Response("OK");
-        if (message.eventName !== "PurchaseCreated") return new Response("Ignored");
 
         if (!opts.signingKey) {
-            console.warn("[webhook] purchase ignored: ZETTLE_WEBHOOK_SIGNING_KEY is not set");
+            console.warn(`[webhook] ${message.eventName} ignored: ZETTLE_WEBHOOK_SIGNING_KEY is not set`);
             return new Response("Not configured", { status: 202 });
         }
         const { timestamp, payload } = message;
@@ -88,6 +87,12 @@ export function zettleWebhook(opts: { signingKey?: string; productUuid: string; 
             return new Response("Bad signature", { status: 401 });
         }
 
+        // Other events are only verified, which lets `bun run webhook events` test the
+        // signature with e.g. ProductUpdated instead of a sale
+        if (message.eventName !== "PurchaseCreated") {
+            console.log(`[webhook] signature OK on ${message.eventName}, ignored`);
+            return new Response("Ignored");
+        }
         if (hasProduct(payload, opts.productUuid)) {
             console.log("[webhook] alumniskatt purchase → syncing");
             opts.onPurchase();

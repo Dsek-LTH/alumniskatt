@@ -136,6 +136,11 @@ export class ZettleClient {
         return (await this.pusher("POST", SUBSCRIPTIONS_URL, subscription)) as ZettleSubscription;
     }
 
+    /** Replaces a subscription's settings; its uuid and signing key stay the same */
+    async updateSubscription(uuid: string, subscription: Omit<ZettleSubscription, "uuid" | "status" | "signingKey">): Promise<void> {
+        await this.pusher("PUT", `${SUBSCRIPTIONS_URL}/${uuid}`, subscription);
+    }
+
     async deleteSubscription(uuid: string): Promise<void> {
         await this.pusher("DELETE", `${SUBSCRIPTIONS_URL}/${uuid}`);
     }

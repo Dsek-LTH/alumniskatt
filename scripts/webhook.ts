@@ -3,6 +3,9 @@
 //   bun run webhook subscribe https://alumniskatt.dsek.se/api/zettle/webhook you@dsek.se
 //   bun run webhook list
 //   bun run webhook delete <uuid>
+//   bun run webhook events <uuid> PurchaseCreated,ProductUpdated
+//
+// Adding ProductUpdated tests the signature without a sale: edit any product in the library.
 //
 // `subscribe` prints the signing key. Set it as ZETTLE_WEBHOOK_SIGNING_KEY on the server,
 // which ignores webhook purchases until it has it.
@@ -51,9 +54,15 @@ if (command === "subscribe") {
     for (const s of subscriptions) {
         console.log(`${s.uuid}  ${s.status ?? ""}  ${s.eventNames.join(",")}  → ${s.destination}`);
     }
+} else if (command === "events" && args[0] && args[1]) {
+    const current = (await zettle.subscriptions()).find((s) => s.uuid === args[0]);
+    if (!current) throw new Error(`No subscription ${args[0]}`);
+    const { transportName, destination, contactEmail } = current;
+    await zettle.updateSubscription(current.uuid, { transportName, destination, contactEmail, eventNames: args[1].split(",") });
+    console.log(`${current.uuid} now gets ${args[1]}`);
 } else if (command === "delete" && args[0]) {
     await zettle.deleteSubscription(args[0]);
     console.log(`Deleted ${args[0]}`);
 } else {
-    console.log("Usage: bun run webhook subscribe <url> <email> | list | delete <uuid>");
+    console.log("Usage: bun run webhook subscribe <url> <email> | list | events <uuid> <A,B> | delete <uuid>");
 }
