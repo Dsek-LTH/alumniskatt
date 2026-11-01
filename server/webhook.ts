@@ -18,6 +18,34 @@ export function validSignature(signingKey: string, timestamp: string, payload: s
     return expected.length === given.length && timingSafeEqual(expected, given);
 }
 
+/**
+ * Explains a signature mismatch without logging secrets: which header names arrived, the
+ * signature's shape, and whether any plausible variant of Zettle's scheme would have matched.
+ */
+function diagnose(signingKey: string, timestamp: string, payload: string, signature: string, headers: Headers): string {
+    const variants: Record<string, string> = {};
+    const keys: Record<string, Buffer | string> = { "key as text": signingKey, "key base64-decoded": Buffer.from(signingKey, "base64") };
+    const messages: Record<string, string> = { "timestamp.payload": `${timestamp}.${payload}`, payload };
+    for (const [keyName, key] of Object.entries(keys)) {
+        for (const [msgName, msg] of Object.entries(messages)) {
+            const mac = createHmac("sha256", key).update(msg).digest();
+            variants[`hex, ${keyName}, ${msgName}`] = mac.toString("hex");
+            variants[`base64, ${keyName}, ${msgName}`] = mac.toString("base64");
+        }
+    }
+    const given = signature.trim();
+    const match = Object.entries(variants).find(([, v]) => v.toLowerCase() === given.toLowerCase())?.[0];
+    return JSON.stringify({
+        match: match ?? "none",
+        signatureLength: given.length,
+        signatureStart: given.slice(0, 6),
+        keyLength: signingKey.length,
+        timestamp,
+        payloadLength: payload.length,
+        headers: [...headers.keys()],
+    });
+}
+
 /** True if a PurchaseCreated payload has an alumniskatt row */
 function hasProduct(payload: string, productUuid: string): boolean {
     try {
@@ -51,8 +79,12 @@ export function zettleWebhook(opts: { signingKey?: string; productUuid: string; 
         }
         const { timestamp, payload } = message;
         const signature = req.headers.get("x-izettle-signature") ?? "";
-        if (typeof timestamp !== "string" || typeof payload !== "string" || !validSignature(opts.signingKey, timestamp, payload, signature)) {
-            console.warn("[webhook] rejected a message with a missing or wrong signature");
+        if (typeof timestamp !== "string" || typeof payload !== "string" || !signature) {
+            console.warn(`[webhook] rejected a malformed message (signature header: ${signature ? "present" : "missing"}, timestamp: ${typeof timestamp}, payload: ${typeof payload})`);
+            return new Response("Bad signature", { status: 401 });
+        }
+        if (!validSignature(opts.signingKey, timestamp, payload, signature)) {
+            console.warn(`[webhook] rejected a message with a wrong signature: ${diagnose(opts.signingKey, timestamp, payload, signature, req.headers)}`);
             return new Response("Bad signature", { status: 401 });
         }
 
