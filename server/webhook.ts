@@ -22,10 +22,18 @@ export function validSignature(signingKey: string, timestamp: string, payload: s
  * Explains a signature mismatch without logging secrets: which header names arrived, the
  * signature's shape, and whether any plausible variant of Zettle's scheme would have matched.
  */
-function diagnose(signingKey: string, timestamp: string, payload: string, signature: string, headers: Headers): string {
+function diagnose(signingKey: string, timestamp: string, payload: string, signature: string, headers: Headers, body: string): string {
     const variants: Record<string, string> = {};
     const keys: Record<string, Buffer | string> = { "key as text": signingKey, "key base64-decoded": Buffer.from(signingKey, "base64") };
-    const messages: Record<string, string> = { "timestamp.payload": `${timestamp}.${payload}`, payload };
+    // The payload as it appears in the body, still JSON-escaped
+    const rawPayload = /"payload"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(body)?.[1] ?? "";
+    const messages: Record<string, string> = {
+        "timestamp.payload": `${timestamp}.${payload}`,
+        payload,
+        "timestamp.rawPayload": `${timestamp}.${rawPayload}`,
+        rawPayload,
+        body,
+    };
     for (const [keyName, key] of Object.entries(keys)) {
         for (const [msgName, msg] of Object.entries(messages)) {
             const mac = createHmac("sha256", key).update(msg).digest();
@@ -42,6 +50,8 @@ function diagnose(signingKey: string, timestamp: string, payload: string, signat
         keyLength: signingKey.length,
         timestamp,
         payloadLength: payload.length,
+        rawPayloadLength: rawPayload.length,
+        nonAscii: /[^\x00-\x7f]/.test(payload),
         headers: [...headers.keys()],
     });
 }
@@ -62,9 +72,10 @@ function hasProduct(payload: string, productUuid: string): boolean {
  */
 export function zettleWebhook(opts: { signingKey?: string; productUuid: string; onPurchase: () => void }) {
     return async (req: Request): Promise<Response> => {
+        const body = await req.text();
         let message: Message;
         try {
-            message = (await req.json()) as Message;
+            message = JSON.parse(body) as Message;
         } catch {
             return new Response("Expected JSON", { status: 400 });
         }
@@ -83,7 +94,7 @@ export function zettleWebhook(opts: { signingKey?: string; productUuid: string; 
             return new Response("Bad signature", { status: 401 });
         }
         if (!validSignature(opts.signingKey, timestamp, payload, signature)) {
-            console.warn(`[webhook] rejected a message with a wrong signature: ${diagnose(opts.signingKey, timestamp, payload, signature, req.headers)}`);
+            console.warn(`[webhook] rejected a message with a wrong signature: ${diagnose(opts.signingKey, timestamp, payload, signature, req.headers, body)}`);
             return new Response("Bad signature", { status: 401 });
         }
 
